@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SHM · Digital Twin Dashboard</title>
 
-<!-- Fonts: Barlow Condensed (display) + IBM Plex Mono (data) + Barlow (body) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
 
@@ -43,7 +42,7 @@
   --r-card: 6px;
   --r-sm:   4px;
 
-  --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 8px rgba(0,0,0,.04);
+  --shadow:    0 1px 3px rgba(0,0,0,.06), 0 1px 8px rgba(0,0,0,.04);
   --shadow-md: 0 2px 8px rgba(0,0,0,.08), 0 4px 20px rgba(0,0,0,.05);
 }
 
@@ -62,7 +61,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Subtle paper texture */
 body::before {
   content: '';
   position: fixed; inset: 0;
@@ -87,11 +85,7 @@ body::before {
   box-shadow: 0 2px 12px rgba(0,0,0,.22);
 }
 
-.header-brand {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
+.header-brand { display: flex; align-items: center; gap: 14px; }
 
 .header-icon {
   width: 32px; height: 32px;
@@ -121,11 +115,7 @@ body::before {
   margin-top: 1px;
 }
 
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 22px;
-}
+.header-right { display: flex; align-items: center; gap: 22px; }
 
 .api-indicator {
   display: flex;
@@ -158,10 +148,7 @@ body::before {
   color: rgba(255,255,255,.55);
   letter-spacing: .06em;
 }
-
-.header-clock span.h {
-  color: rgba(255,255,255,.9);
-}
+.header-clock span.h { color: rgba(255,255,255,.9); }
 
 /* ════════════════════════════════════════════
    LAYOUT
@@ -203,7 +190,7 @@ body::before {
   color: rgba(255,255,255,.75);
 }
 
-.tb-val.hi { color: var(--amber-lt); }
+.tb-val.hi   { color: var(--amber-lt); }
 .tb-val.good { color: #68d391; }
 .tb-val.bad  { color: var(--red-lt); }
 
@@ -249,13 +236,12 @@ body::before {
 /* ════════════════════════════════════════════
    SENSOR ROW
    ════════════════════════════════════════════ */
-.sensor-row {
-  grid-column: 1 / 2;
-}
+.sensor-row { grid-column: 1 / 2; }
 
+/* 4 equal sensor cards + 1 narrower status card */
 .sensor-cards {
   display: grid;
-  grid-template-columns: repeat(3, 1fr) 0.85fr;
+  grid-template-columns: repeat(4, 1fr) 0.72fr;
   gap: 12px;
 }
 
@@ -280,7 +266,10 @@ body::before {
 }
 
 .sensor-card.alert-card::after { background: var(--red); }
-.sensor-card.alert-card { border-color: rgba(192,57,43,.25); box-shadow: 0 0 0 3px rgba(192,57,43,.07), var(--shadow); }
+.sensor-card.alert-card {
+  border-color: rgba(192,57,43,.25);
+  box-shadow: 0 0 0 3px rgba(192,57,43,.07), var(--shadow);
+}
 
 .card-label {
   font-family: var(--f-disp);
@@ -299,7 +288,7 @@ body::before {
 
 .card-value {
   font-family: var(--f-mono);
-  font-size: 36px;
+  font-size: 34px;
   font-weight: 600;
   line-height: 1;
   color: var(--ink);
@@ -365,10 +354,10 @@ body::before {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 8px 16px;
+  padding: 8px 14px;
   border-radius: var(--r-sm);
   font-family: var(--f-disp);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: .1em;
   text-transform: uppercase;
@@ -431,20 +420,11 @@ body::before {
 /* ════════════════════════════════════════════
    TWIN + CHARTS ROW
    ════════════════════════════════════════════ */
-.twin-col {
-  grid-column: 1 / 2;
-}
+.twin-col    { grid-column: 1 / 2; }
+.alerts-col  { grid-column: 2 / 3; grid-row: 2 / 5; }
+.charts-col  { grid-column: 1 / 2; }
 
-.alerts-col {
-  grid-column: 2 / 3;
-  grid-row: 2 / 5;
-}
-
-.charts-col {
-  grid-column: 1 / 2;
-}
-
-/* ── Digital Twin ── */
+/* ── Digital Twin Card ── */
 .twin-card {
   background: var(--card);
   border: 1px solid var(--rule2);
@@ -474,10 +454,7 @@ body::before {
   font-size: 11px;
 }
 
-.twin-legend {
-  display: flex;
-  gap: 10px;
-}
+.twin-legend { display: flex; gap: 10px; }
 
 .tl-item {
   display: flex;
@@ -488,9 +465,54 @@ body::before {
   color: var(--muted);
 }
 
-.tl-dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
+.tl-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+/* 3D Canvas Container */
+#twin-canvas-wrap {
+  width: 100%;
+  height: 240px;
+  border-radius: 4px;
+  border: 1px solid var(--rule);
+  overflow: hidden;
+  background: #f8f6f1;
+  position: relative;
+}
+
+#twin-canvas-wrap canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.twin-status-overlay {
+  position: absolute;
+  top: 8px; left: 8px;
+  padding: 4px 9px;
+  border-radius: 3px;
+  font-family: var(--f-mono);
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: .05em;
+  pointer-events: none;
+  transition: all .3s;
+  background: rgba(42,125,79,.1);
+  color: #2a7d4f;
+  border: 1px solid rgba(42,125,79,.2);
+}
+
+.twin-status-overlay.alert {
+  background: rgba(192,57,43,.12);
+  color: #c0392b;
+  border-color: rgba(192,57,43,.28);
+}
+
+.twin-hint {
+  position: absolute;
+  bottom: 7px; right: 9px;
+  font-family: var(--f-mono);
+  font-size: 8px;
+  color: rgba(0,0,0,.22);
+  pointer-events: none;
 }
 
 /* ── Charts ── */
@@ -531,10 +553,7 @@ body::before {
   color: var(--ink);
 }
 
-.chart-canvas-wrap {
-  position: relative;
-  height: 130px;
-}
+.chart-canvas-wrap { position: relative; height: 130px; }
 
 /* ════════════════════════════════════════════
    ALERTS PANEL
@@ -632,10 +651,10 @@ body::before {
   to   { opacity: 1; transform: translateX(0); }
 }
 
-.alert-item.critical { background: rgba(192,57,43,.06); border-color: var(--red);     color: #9b3636; }
-.alert-item.warning  { background: rgba(200,124,26,.07);border-color: var(--amber);   color: #8a5a10; }
-.alert-item.resolved { background: rgba(42,125,79,.07); border-color: var(--green);   color: #276841; }
-.alert-item.info     { background: var(--sky-dim);      border-color: var(--sky);     color: #1a4d8a; }
+.alert-item.critical { background: rgba(192,57,43,.06); border-color: var(--red);   color: #9b3636; }
+.alert-item.warning  { background: rgba(200,124,26,.07);border-color: var(--amber); color: #8a5a10; }
+.alert-item.resolved { background: rgba(42,125,79,.07); border-color: var(--green); color: #276841; }
+.alert-item.info     { background: var(--sky-dim);      border-color: var(--sky);   color: #1a4d8a; }
 
 .alert-time {
   display: block;
@@ -732,7 +751,7 @@ body::before {
     </div>
     <div>
       <div class="header-title">Smart Structural Health Monitoring</div>
-      <div class="header-sub">Edge AI · Digital Twin · Real-time Analysis</div>
+      <div class="header-sub">3D Digital Twin · Real-time ESP32 Sensor Analysis</div>
     </div>
   </div>
   <div class="header-right">
@@ -752,7 +771,9 @@ body::before {
   <!-- Connection error banner -->
   <div class="conn-error" id="conn-error">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
     </svg>
     <span>Cannot reach backend. Make sure Flask is running on <strong>http://127.0.0.1:5000</strong></span>
   </div>
@@ -775,8 +796,8 @@ body::before {
     </div>
     <div class="tb-sep"></div>
     <div class="tb-item">
-      <div class="tb-label">Anomaly Score</div>
-      <div class="tb-val" id="tb-score">—</div>
+      <div class="tb-label">Sound Level</div>
+      <div class="tb-val" id="tb-sound">—</div>
     </div>
     <div class="tb-sep"></div>
     <div class="tb-item">
@@ -835,33 +856,55 @@ body::before {
             Vibration
           </div>
           <div class="card-value val-transition" id="cv-vib">—</div>
-          <div class="card-unit">m/s² · threshold 4.0</div>
+          <div class="card-unit">m/s² · threshold 40</div>
           <div class="card-track">
             <div class="card-fill" id="cf-vib" style="width:0%; background: var(--sky)"></div>
           </div>
           <div class="card-meta">
-            <span>0.1 min</span>
+            <span>0 min</span>
             <span class="delta" id="cd-vib">—</span>
-            <span>5.0 max</span>
+            <span>50 max</span>
           </div>
         </div>
 
-        <!-- Strain -->
-        <div class="sensor-card" id="sc-strain">
+        <!-- Motion -->
+        <div class="sensor-card" id="sc-motion">
           <div class="card-label">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/>
+              <circle cx="12" cy="12" r="2"/>
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
             </svg>
-            Strain
+            Motion
           </div>
-          <div class="card-value val-transition" id="cv-strain">—</div>
-          <div class="card-unit">με · max 100 με</div>
+          <div class="card-value val-transition" id="cv-motion">—</div>
+          <div class="card-unit">g · accelerometer</div>
           <div class="card-track">
-            <div class="card-fill" id="cf-strain" style="width:0%; background: var(--green-lt)"></div>
+            <div class="card-fill" id="cf-motion" style="width:0%; background: var(--green-lt)"></div>
           </div>
           <div class="card-meta">
-            <span>10 min</span>
-            <span class="delta" id="cd-strain">—</span>
+            <span>0 min</span>
+            <span class="delta" id="cd-motion">—</span>
+            <span>10g max</span>
+          </div>
+        </div>
+
+        <!-- Sound -->
+        <div class="sensor-card" id="sc-sound">
+          <div class="card-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              <path d="M15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14"/>
+            </svg>
+            Sound
+          </div>
+          <div class="card-value val-transition" id="cv-sound">—</div>
+          <div class="card-unit">dB · threshold 50 dB</div>
+          <div class="card-track">
+            <div class="card-fill" id="cf-sound" style="width:0%; background: var(--amber)"></div>
+          </div>
+          <div class="card-meta">
+            <span>0 min</span>
+            <span class="delta" id="cd-sound">—</span>
             <span>100 max</span>
           </div>
         </div>
@@ -873,7 +916,7 @@ body::before {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
-            <span id="status-text">NORMAL</span>
+            <span>NORMAL</span>
           </div>
           <div class="status-detail" id="status-detail">Awaiting data…</div>
           <div class="integrity-wrap">
@@ -890,7 +933,7 @@ body::before {
       </div>
     </div>
 
-    <!-- ── ALERTS PANEL (right column, spans rows 2-4) ── -->
+    <!-- ── ALERTS PANEL (right column, spans rows 2–4) ── -->
     <div class="alerts-col">
       <div class="section-label">Alert Log</div>
       <div class="alerts-card">
@@ -898,7 +941,8 @@ body::before {
           <div class="alerts-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-              <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
             </svg>
             Events
             <span class="alert-badge empty" id="alert-badge-count">0</span>
@@ -911,14 +955,14 @@ body::before {
       </div>
     </div>
 
-    <!-- ── DIGITAL TWIN ── -->
+    <!-- ── 3D DIGITAL TWIN ── -->
     <div class="twin-col">
-      <div class="section-label">Digital Twin Visualization</div>
+      <div class="section-label">3D Digital Twin Visualization</div>
       <div class="twin-card">
         <div class="twin-meta">
           <div class="twin-id">
             <strong>BRIDGE-STRUCT-001</strong>
-            Span 120 m · Pre-stressed concrete · 3 sensor zones
+            Span 120 m · Pre-stressed concrete · 4 sensor nodes
           </div>
           <div class="twin-legend">
             <div class="tl-item"><div class="tl-dot" style="background:var(--green-lt)"></div>Safe</div>
@@ -926,9 +970,12 @@ body::before {
             <div class="tl-item"><div class="tl-dot" style="background:var(--red-lt)"></div>Alert</div>
           </div>
         </div>
-        <svg id="twin-svg" viewBox="0 0 700 195" xmlns="http://www.w3.org/2000/svg"
-             style="width:100%;height:auto;display:block;background:#f8f6f1;border-radius:4px;border:1px solid var(--rule)">
-        </svg>
+
+        <!-- Three.js renders into this container -->
+        <div id="twin-canvas-wrap">
+          <div class="twin-status-overlay" id="twin-overlay">✓ SAFE</div>
+          <div class="twin-hint">Auto-rotating 3D view</div>
+        </div>
       </div>
     </div>
 
@@ -943,7 +990,7 @@ body::before {
             <div class="chart-current"><span id="chart-temp-cur">—</span> °C</div>
           </div>
           <div class="chart-canvas-wrap">
-            <canvas id="chart-temp" role="img" aria-label="Temperature readings over time">Temperature over time</canvas>
+            <canvas id="chart-temp" role="img" aria-label="Temperature readings over time"></canvas>
           </div>
         </div>
 
@@ -953,26 +1000,35 @@ body::before {
             <div class="chart-current"><span id="chart-vib-cur">—</span> m/s²</div>
           </div>
           <div class="chart-canvas-wrap">
-            <canvas id="chart-vib" role="img" aria-label="Vibration readings over time">Vibration over time</canvas>
+            <canvas id="chart-vib" role="img" aria-label="Vibration readings over time"></canvas>
           </div>
         </div>
 
       </div>
     </div>
 
-  </div>
-</div>
+  </div><!-- /.main-grid -->
+</div><!-- /.page -->
 
-<!-- Chart.js -->
+
+<!-- ══ SCRIPTS ══ -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <script>
+'use strict';
+
 /* ════════════════════════════════════════════
    CONFIG
    ════════════════════════════════════════════ */
 const API_BASE    = 'http://127.0.0.1:5000';
 const POLL_MS     = 2500;
 const MAX_HISTORY = 30;
+
+// Alert thresholds (from hardware spec)
+const THRESH_TEMP  = 45;
+const THRESH_VIB   = 40;
+const THRESH_SOUND = 50;
 
 /* ════════════════════════════════════════════
    STATE
@@ -981,25 +1037,26 @@ let tempHistory   = [];
 let vibHistory    = [];
 let prevTemp      = null;
 let prevVib       = null;
-let prevStrain    = null;
+let prevMotion    = null;
+let prevSound     = null;
 let sessionAlerts = 0;
 let readingCount  = 0;
 let wasAlert      = false;
 let normalRun     = 0;
+let consecutiveErrors = 0;
 
 /* ════════════════════════════════════════════
    CLOCK
    ════════════════════════════════════════════ */
 function tickClock() {
-  const now = new Date();
   document.getElementById('clock').textContent =
-    now.toLocaleTimeString('en-US', { hour12: false });
+    new Date().toLocaleTimeString('en-US', { hour12: false });
 }
 setInterval(tickClock, 1000);
 tickClock();
 
 /* ════════════════════════════════════════════
-   CHARTS
+   CHART.JS SETUP
    ════════════════════════════════════════════ */
 const chartDefaults = {
   responsive: true,
@@ -1007,7 +1064,7 @@ const chartDefaults = {
   animation: { duration: 300 },
   elements: {
     point: { radius: 0, hoverRadius: 4 },
-    line: { tension: 0.42, borderWidth: 2 }
+    line:  { tension: 0.42, borderWidth: 2 }
   },
   plugins: {
     legend: { display: false },
@@ -1017,8 +1074,8 @@ const chartDefaults = {
       borderWidth: 1,
       titleColor: '#8a8177',
       bodyColor: '#ece8df',
-      titleFont:  { family: "'IBM Plex Mono', monospace", size: 9 },
-      bodyFont:   { family: "'IBM Plex Mono', monospace", size: 11 },
+      titleFont: { family: "'IBM Plex Mono', monospace", size: 9 },
+      bodyFont:  { family: "'IBM Plex Mono', monospace", size: 11 },
       displayColors: false,
       padding: 9,
     }
@@ -1050,8 +1107,7 @@ const tempChart = new Chart(
           fill: true,
         },
         {
-          // Threshold line
-          data: Array(MAX_HISTORY).fill(45),
+          data: Array(MAX_HISTORY).fill(THRESH_TEMP),
           borderColor: 'rgba(192,57,43,.35)',
           borderDash: [5, 4],
           borderWidth: 1.5,
@@ -1060,7 +1116,10 @@ const tempChart = new Chart(
         }
       ]
     },
-    options: { ...chartDefaults, scales: { ...chartDefaults.scales, y: { ...chartDefaults.scales.y, min: 20, max: 55 } } }
+    options: {
+      ...chartDefaults,
+      scales: { ...chartDefaults.scales, y: { ...chartDefaults.scales.y, min: 20, max: 55 } }
+    }
   }
 );
 
@@ -1077,7 +1136,7 @@ const vibChart = new Chart(
           fill: true,
         },
         {
-          data: Array(MAX_HISTORY).fill(4.0),
+          data: Array(MAX_HISTORY).fill(THRESH_VIB),
           borderColor: 'rgba(192,57,43,.35)',
           borderDash: [5, 4],
           borderWidth: 1.5,
@@ -1086,149 +1145,306 @@ const vibChart = new Chart(
         }
       ]
     },
-    options: { ...chartDefaults, scales: { ...chartDefaults.scales, y: { ...chartDefaults.scales.y, min: 0, max: 6 } } }
+    options: {
+      ...chartDefaults,
+      scales: { ...chartDefaults.scales, y: { ...chartDefaults.scales.y, min: 0, max: 55 } }
+    }
   }
 );
 
 /* ════════════════════════════════════════════
-   DIGITAL TWIN SVG
+   THREE.JS  — 3D DIGITAL TWIN MODULE
    ════════════════════════════════════════════ */
-function renderBridge(sysAlert, tempAlert, vibAlert, strainAlert, temp, vib, strain) {
-  const G = '#2a7d4f'; // safe green
-  const R = '#c0392b'; // alert red
-  const A = '#c87c1a'; // amber
-  const S = '#2563a8'; // sky blue
-  const BG = '#f8f6f1';
-  const GROUND = '#e8e4dc';
+const TWIN = (() => {
 
-  const z1 = tempAlert   ? R : G;
-  const z2 = vibAlert    ? R : G;
-  const z3 = strainAlert ? A : G;
+  // Internal state
+  let scene, camera, renderer, bridgeGroup, alertPointLight;
+  const deckMats   = [];
+  const towerMats  = [];
+  const cableMats  = [];
+  let   cameraAngle  = 0;
+  let   currentVib   = 0;
+  let   initialized  = false;
 
-  const CABLE_COL  = sysAlert ? R : '#5a7f9a';
-  const TOWER_COL  = sysAlert ? R : '#4a5568';
-  const DECK_BASE  = '#6b7280';
-
-  // Catenary curve for cable
-  const cableY = x => {
-    const norm = (x - 350) / 195;
-    return 60 + 58 * norm * norm;
+  // Hex color palette
+  const HEX = {
+    DECK_SAFE:    0x2a7d4f,
+    DECK_ALERT:   0xc0392b,
+    TOWER_SAFE:   0x4a5568,
+    TOWER_ALERT:  0x8b2020,
+    CABLE_SAFE:   0x5a7f9a,
+    CABLE_ALERT:  0xe05252,
+    HANGER:       0x7a96b0,
+    ABUT:         0x5c6470,
+    ROAD:         0x7a8290,
+    GROUND:       0xdfd9ce,
+    WATER:        0x6baed6,
+    BG:           0xf8f6f1,
   };
 
-  // Hangers
-  const hangerXs = [225, 252, 280, 308, 336, 364, 392, 420, 448, 476];
-  const hangerLines = hangerXs.map(x => {
-    const cy = cableY(x);
-    const dy = 116;
-    if (cy >= dy - 1) return '';
-    const col = x < 272 ? z1 : x <= 432 ? z2 : z3;
-    return `<line x1="${x}" y1="${cy.toFixed(1)}" x2="${x}" y2="${dy}" stroke="${col}" stroke-width="1.2" opacity="0.5"/>`;
-  }).join('');
+  // ── Build the bridge geometry once ──────────────────────────────────────
+  function _buildBridge() {
+    bridgeGroup = new THREE.Group();
+    scene.add(bridgeGroup);
 
-  // Sensor node
-  const sensorNode = (cx, cy, color, label) => `
-    <circle cx="${cx}" cy="${cy}" r="5.5" fill="${color}" opacity="0.9" stroke="white" stroke-width="1.2"/>
-    <text x="${cx}" y="${cy - 13}" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7.5" fill="${color}">${label}</text>
-  `;
+    // -- Deck --
+    const dkMat = new THREE.MeshLambertMaterial({ color: HEX.DECK_SAFE });
+    deckMats.push(dkMat);
+    const deck = new THREE.Mesh(new THREE.BoxGeometry(14, 0.28, 1.8), dkMat);
+    deck.castShadow    = true;
+    deck.receiveShadow = true;
+    bridgeGroup.add(deck);
 
-  // Animated pulsing ring (only when alerting)
-  const pulseRing = sysAlert ? `
-    <circle cx="155" cy="110" r="11" fill="none" stroke="${R}" stroke-width="1" opacity="0.3">
-      <animate attributeName="r" values="8;16;8" dur="2s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.4;0;0.4" dur="2s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="350" cy="110" r="11" fill="none" stroke="${R}" stroke-width="1" opacity="0.3">
-      <animate attributeName="r" values="8;16;8" dur="2s" begin="0.4s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.4;0;0.4" dur="2s" begin="0.4s" repeatCount="indefinite"/>
-    </circle>
-  ` : '';
+    // Road surface
+    const roadMat = new THREE.MeshLambertMaterial({ color: HEX.ROAD });
+    const road = new THREE.Mesh(new THREE.PlaneGeometry(14, 1.5), roadMat);
+    road.rotation.x = -Math.PI / 2;
+    road.position.y = 0.145;
+    bridgeGroup.add(road);
 
-  document.getElementById('twin-svg').innerHTML = `
-    <!-- Sky & ground -->
-    <rect width="700" height="195" fill="${BG}"/>
-    <rect x="0" y="155" width="700" height="40" fill="${GROUND}"/>
-    <line x1="0" y1="155" x2="700" y2="155" stroke="rgba(0,0,0,0.08)" stroke-width="1"/>
+    // Road centre line dashes
+    const dashMat = new THREE.MeshLambertMaterial({
+      color: 0xf5edcc, transparent: true, opacity: 0.55
+    });
+    [-4, -2, 0, 2, 4].forEach(dx => {
+      const dash = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.07), dashMat);
+      dash.rotation.x = -Math.PI / 2;
+      dash.position.set(dx, 0.148, 0);
+      bridgeGroup.add(dash);
+    });
 
-    <!-- Water lines -->
-    <line x1="40"  y1="166" x2="120" y2="166" stroke="rgba(37,99,168,0.18)" stroke-width="1.5"/>
-    <line x1="60"  y1="172" x2="105" y2="172" stroke="rgba(37,99,168,0.10)" stroke-width="1"/>
-    <line x1="580" y1="163" x2="660" y2="163" stroke="rgba(37,99,168,0.15)" stroke-width="1.5"/>
-    <line x1="595" y1="170" x2="645" y2="170" stroke="rgba(37,99,168,0.08)" stroke-width="1"/>
+    // -- Towers --
+    [-4.6, 4.6].forEach(tx => {
+      const shaftMat = new THREE.MeshLambertMaterial({ color: HEX.TOWER_SAFE });
+      const capMat   = new THREE.MeshLambertMaterial({ color: HEX.TOWER_SAFE });
+      towerMats.push(shaftMat, capMat);
 
-    <!-- Piers -->
-    <rect x="146" y="118" width="18" height="38" rx="2" fill="${TOWER_COL}" opacity="0.75"/>
-    <rect x="536" y="118" width="18" height="38" rx="2" fill="${TOWER_COL}" opacity="0.75"/>
-    <rect x="140" y="153" width="30" height="5" rx="1" fill="${TOWER_COL}" opacity="0.45"/>
-    <rect x="530" y="153" width="30" height="5" rx="1" fill="${TOWER_COL}" opacity="0.45"/>
+      // Main vertical shaft
+      const shaft = new THREE.Mesh(new THREE.BoxGeometry(0.25, 4.4, 0.25), shaftMat);
+      shaft.position.set(tx, 2.2, 0);
+      shaft.castShadow = true;
+      bridgeGroup.add(shaft);
 
-    <!-- Towers -->
-    <rect x="149" y="18" width="14" height="102" rx="3" fill="${TOWER_COL}"/>
-    <rect x="539" y="18" width="14" height="102" rx="3" fill="${TOWER_COL}"/>
-    <rect x="143" y="12" width="26" height="11" rx="3" fill="${TOWER_COL}"/>
-    <rect x="533" y="12" width="26" height="11" rx="3" fill="${TOWER_COL}"/>
-    <!-- Tower cross beam -->
-    <rect x="151" y="52" width="10" height="4" rx="1" fill="rgba(255,255,255,0.15)"/>
-    <rect x="541" y="52" width="10" height="4" rx="1" fill="rgba(255,255,255,0.15)"/>
+      // Horizontal crossbar
+      const bar = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.16, 1.3), shaftMat);
+      bar.position.set(tx, 1.6, 0);
+      bridgeGroup.add(bar);
 
-    <!-- Main cables -->
-    <path d="M 156 18 Q 350 90 544 18" fill="none" stroke="${CABLE_COL}" stroke-width="2.8" opacity="0.85"/>
-    <path d="M 160 18 Q 350 98 540 18" fill="none" stroke="${CABLE_COL}" stroke-width="1.2" opacity="0.25"/>
+      // Tower cap
+      const cap = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.24, 0.56), capMat);
+      cap.position.set(tx, 4.52, 0);
+      bridgeGroup.add(cap);
+    });
 
-    <!-- Hanger lines -->
-    ${hangerLines}
+    // -- Abutments (bridge ends) --
+    const abutMat = new THREE.MeshLambertMaterial({ color: HEX.ABUT });
+    [-7.8, 7.8].forEach(ax => {
+      const abut = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.4, 2.0), abutMat);
+      abut.position.set(ax, -0.7, 0);
+      abut.castShadow = true;
+      bridgeGroup.add(abut);
+    });
 
-    <!-- Deck zones (3 colour zones) -->
-    <rect x="55"  y="112" width="193" height="8" rx="0" fill="${z1}" opacity="0.75"/>
-    <rect x="248" y="112" width="204" height="8" rx="0" fill="${z2}" opacity="0.75"/>
-    <rect x="452" y="112" width="193" height="8" rx="0" fill="${z3}" opacity="0.75"/>
-    <!-- Zone dividers -->
-    <line x1="248" y1="112" x2="248" y2="120" stroke="${BG}" stroke-width="2"/>
-    <line x1="452" y1="112" x2="452" y2="120" stroke="${BG}" stroke-width="2"/>
-    <!-- Deck sheen -->
-    <line x1="55" y1="113" x2="645" y2="113" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
-    <line x1="55" y1="119" x2="645" y2="119" stroke="rgba(0,0,0,0.12)" stroke-width="1"/>
-    <!-- Guardrails -->
-    <line x1="55" y1="111" x2="645" y2="111" stroke="rgba(0,0,0,0.22)" stroke-width="1.8"/>
-    <line x1="55" y1="122" x2="645" y2="122" stroke="rgba(0,0,0,0.22)" stroke-width="1.8"/>
-    <!-- Road dashes -->
-    ${[95,130,168,210,255,300,350,400,445,490,535,572,608].map(x =>
-      `<rect x="${x}" y="115" width="16" height="2" rx="1" fill="rgba(255,255,255,0.2)"/>`
-    ).join('')}
+    // -- Suspension cables (catenary curve as LineSegments) --
+    // Cable equation: y = towerHeight - sag * 4 * t * (1 - t)  where t ∈ [0, 1]
+    const TOWER_H   = 4.4;
+    const CABLE_SAG = 3.6;
+    const NUM_PTS   = 50;
 
-    <!-- Abutments -->
-    <rect x="28" y="112" width="28" height="44" rx="2" fill="${TOWER_COL}" opacity="0.55"/>
-    <rect x="644" y="112" width="28" height="44" rx="2" fill="${TOWER_COL}" opacity="0.55"/>
+    [-0.92, 0.92].forEach(cz => {
+      const pts = [];
+      for (let i = 0; i <= NUM_PTS; i++) {
+        const t = i / NUM_PTS;
+        const cx = -4.6 + 9.2 * t;
+        const cy = TOWER_H - CABLE_SAG * 4 * t * (1 - t);
+        pts.push(new THREE.Vector3(cx, cy, cz));
+      }
+      const geo = new THREE.BufferGeometry().setFromPoints(pts);
+      const mat = new THREE.LineBasicMaterial({ color: HEX.CABLE_SAFE });
+      cableMats.push(mat);
+      bridgeGroup.add(new THREE.Line(geo, mat));
+    });
 
-    <!-- Sensor nodes -->
-    ${pulseRing}
-    ${sensorNode(155, 110, tempAlert   ? R : A, `T:${temp}°C`)}
-    ${sensorNode(350, 110, vibAlert    ? R : S, `V:${vib}`)}
-    ${sensorNode(545, 110, strainAlert ? R : G, `S:${strain}με`)}
+    // -- Hangers (thin vertical members from cable to deck) --
+    const hangerMat = new THREE.MeshLambertMaterial({ color: HEX.HANGER });
+    const hangerXPositions = [-3.8, -2.4, -1.2, 0, 1.2, 2.4, 3.8];
 
-    <!-- Zone labels -->
-    <text x="152" y="136" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7" fill="${z1}" opacity="0.75">ZONE·A</text>
-    <text x="350" y="136" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7" fill="${z2}" opacity="0.75">ZONE·B</text>
-    <text x="548" y="136" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7" fill="${z3}" opacity="0.75">ZONE·C</text>
+    hangerXPositions.forEach(hx => {
+      const t    = (hx + 4.6) / 9.2;
+      const cableY = TOWER_H - CABLE_SAG * 4 * t * (1 - t);
+      const hangerH = Math.max(0.05, cableY - 0.14);
 
-    <!-- Status stamp -->
-    <rect x="9" y="9" width="${sysAlert?78:60}" height="20" rx="3"
-      fill="${sysAlert ? 'rgba(192,57,43,.12)' : 'rgba(42,125,79,.1)'}"/>
-    <text x="18" y="23" font-family="IBM Plex Mono,monospace" font-size="8.5" font-weight="600"
-      fill="${sysAlert ? R : G}" letter-spacing="0.05em">${sysAlert ? '⚠ DAMAGE' : '✓ SAFE'}</text>
+      [-0.92, 0.92].forEach(hz => {
+        const hGeo   = new THREE.BoxGeometry(0.055, hangerH, 0.055);
+        const hanger = new THREE.Mesh(hGeo, hangerMat);
+        hanger.position.set(hx, 0.14 + hangerH / 2, hz);
+        bridgeGroup.add(hanger);
+      });
+    });
+  }
 
-    <!-- Scale -->
-    <line x1="55" y1="178" x2="645" y2="178" stroke="rgba(0,0,0,0.1)" stroke-width="1"/>
-    <line x1="55"  y1="175" x2="55"  y2="181" stroke="rgba(0,0,0,0.14)" stroke-width="1"/>
-    <line x1="645" y1="175" x2="645" y2="181" stroke="rgba(0,0,0,0.14)" stroke-width="1"/>
-    <text x="350" y="190" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7.5" fill="#b5b0a8">← 120 m span →</text>
-  `;
-}
+  // ── Public: initialise the scene and start the render loop ──────────────
+  function init() {
+    const wrap = document.getElementById('twin-canvas-wrap');
+    const W    = wrap.clientWidth  || 700;
+    const H    = wrap.clientHeight || 240;
+
+    // Scene
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(HEX.BG);
+    scene.fog        = new THREE.FogExp2(HEX.BG, 0.036);
+
+    // Camera
+    camera = new THREE.PerspectiveCamera(40, W / H, 0.1, 60);
+    camera.position.set(0, 5, 15);
+    camera.lookAt(0, 1, 0);
+
+    // Renderer
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.setSize(W, H);
+    renderer.shadowMap.enabled  = true;
+    renderer.shadowMap.type     = THREE.PCFSoftShadowMap;
+    wrap.insertBefore(renderer.domElement, wrap.firstChild);
+
+    // ── Lighting ──────────────────────────────────────────────────────────
+    scene.add(new THREE.AmbientLight(0xffffff, 0.68));
+
+    const sun = new THREE.DirectionalLight(0xfff6e8, 1.05);
+    sun.position.set(9, 14, 7);
+    sun.castShadow = true;
+    sun.shadow.camera.left   = -12;
+    sun.shadow.camera.right  =  12;
+    sun.shadow.camera.top    =  10;
+    sun.shadow.camera.bottom =  -5;
+    sun.shadow.camera.near   =   1;
+    sun.shadow.camera.far    =  30;
+    scene.add(sun);
+
+    const fill = new THREE.DirectionalLight(0xd8e8ff, 0.32);
+    fill.position.set(-6, 4, -9);
+    scene.add(fill);
+
+    // Red point light for alert glow — starts off
+    alertPointLight = new THREE.PointLight(0xff1a1a, 0, 10);
+    alertPointLight.position.set(0, 2.5, 0);
+    scene.add(alertPointLight);
+
+    // ── Environment ──────────────────────────────────────────────────────
+    // Ground plane
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(30, 12),
+      new THREE.MeshLambertMaterial({ color: HEX.GROUND })
+    );
+    ground.rotation.x  = -Math.PI / 2;
+    ground.position.y  = -1.65;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    // Water body under the bridge span
+    const water = new THREE.Mesh(
+      new THREE.PlaneGeometry(10, 7),
+      new THREE.MeshLambertMaterial({ color: HEX.WATER, transparent: true, opacity: 0.4 })
+    );
+    water.rotation.x = -Math.PI / 2;
+    water.position.set(0, -1.62, 0);
+    scene.add(water);
+
+    // ── Bridge geometry ──────────────────────────────────────────────────
+    _buildBridge();
+
+    // ── Event listeners ──────────────────────────────────────────────────
+    window.addEventListener('resize', _onResize);
+
+    initialized = true;
+    _loop();
+  }
+
+  // ── Internal: resize handler ─────────────────────────────────────────
+  function _onResize() {
+    if (!renderer) return;
+    const wrap = document.getElementById('twin-canvas-wrap');
+    const W    = wrap.clientWidth;
+    const H    = wrap.clientHeight;
+    camera.aspect = W / H;
+    camera.updateProjectionMatrix();
+    renderer.setSize(W, H);
+  }
+
+  // ── Internal: main render loop ────────────────────────────────────────
+  function _loop() {
+    requestAnimationFrame(_loop);
+    if (!initialized) return;
+
+    // Slow horizontal camera orbit to show 3-D depth
+    cameraAngle += 0.0038;
+    camera.position.x = Math.sin(cameraAngle) * 9;
+    camera.position.z = Math.cos(cameraAngle) * 15;
+    camera.lookAt(0, 1, 0);
+
+    // Vibration shake — scales with sensor value
+    const vibFactor = Math.max(0, (currentVib - 5) / (THRESH_VIB - 5));
+    if (vibFactor > 0) {
+      const t = Date.now();
+      bridgeGroup.position.y = vibFactor * 0.09 * Math.sin(t * 0.024);
+      bridgeGroup.rotation.z = vibFactor * 0.004 * Math.sin(t * 0.019 + 1.2);
+    } else {
+      bridgeGroup.position.y = 0;
+      bridgeGroup.rotation.z = 0;
+    }
+
+    renderer.render(scene, camera);
+  }
+
+  // ── Public: update visual state based on sensor data ─────────────────
+  function setAlert(isAlert, vibLevel) {
+    currentVib = vibLevel;
+    if (!initialized) return;
+
+    const dkCol  = isAlert ? HEX.DECK_ALERT  : HEX.DECK_SAFE;
+    const twCol  = isAlert ? HEX.TOWER_ALERT : HEX.TOWER_SAFE;
+    const cbCol  = isAlert ? HEX.CABLE_ALERT : HEX.CABLE_SAFE;
+    const emDk   = isAlert ? 0x2a0000 : 0x000000;
+    const emTw   = isAlert ? 0x120000 : 0x000000;
+    const emInt  = isAlert ? 0.22     : 0;
+
+    deckMats.forEach(m => {
+      m.color.setHex(dkCol);
+      m.emissive.setHex(emDk);
+      m.emissiveIntensity = emInt;
+    });
+
+    towerMats.forEach(m => {
+      m.color.setHex(twCol);
+      m.emissive.setHex(emTw);
+      m.emissiveIntensity = emInt * 0.8;
+    });
+
+    cableMats.forEach(m => m.color.setHex(cbCol));
+
+    // Alert point light intensity
+    alertPointLight.intensity = isAlert ? 1.8 : 0;
+
+    // Overlay badge in the 3D viewport
+    const overlay = document.getElementById('twin-overlay');
+    if (isAlert) {
+      overlay.textContent  = '⚠ ALERT';
+      overlay.className    = 'twin-status-overlay alert';
+    } else {
+      overlay.textContent  = '✓ SAFE';
+      overlay.className    = 'twin-status-overlay';
+    }
+  }
+
+  return { init, setAlert };
+
+})(); // end TWIN module
 
 /* ════════════════════════════════════════════
-   ALERTS
+   ALERTS LOG
    ════════════════════════════════════════════ */
 function addAlert(type, message) {
-  const list = document.getElementById('alert-list');
+  const list  = document.getElementById('alert-list');
   const empty = list.querySelector('.alert-empty');
   if (empty) empty.remove();
 
@@ -1239,56 +1455,50 @@ function addAlert(type, message) {
 
   const cnt = document.getElementById('alert-badge-count');
   cnt.textContent = sessionAlerts;
-  cnt.className = sessionAlerts > 0 ? 'alert-badge' : 'alert-badge empty';
+  cnt.className   = sessionAlerts > 0 ? 'alert-badge' : 'alert-badge empty';
 
-  const icons = { critical: '⚠', warning: '▲', resolved: '✓', info: '·' };
-  const time = new Date().toLocaleTimeString('en-US', { hour12: false });
-
-  const el = document.createElement('div');
+  const icons  = { critical: '⚠', warning: '▲', resolved: '✓', info: '·' };
+  const time   = new Date().toLocaleTimeString('en-US', { hour12: false });
+  const el     = document.createElement('div');
   el.className = `alert-item ${type}`;
   el.innerHTML = `<span class="alert-time">${time}</span>${icons[type] || '·'} ${message}`;
   list.insertBefore(el, list.firstChild);
 
-  // Cap list length
   while (list.children.length > 25) list.removeChild(list.lastChild);
 }
 
 function clearAlerts() {
   sessionAlerts = 0;
-  document.getElementById('tb-alert-count').textContent = '0';
-  document.getElementById('alert-badge-count').textContent = '0';
-  document.getElementById('alert-badge-count').className = 'alert-badge empty';
-  document.getElementById('alert-list').innerHTML = '<div class="alert-empty">Log cleared</div>';
+  document.getElementById('tb-alert-count').textContent     = '0';
+  document.getElementById('alert-badge-count').textContent  = '0';
+  document.getElementById('alert-badge-count').className    = 'alert-badge empty';
+  document.getElementById('alert-list').innerHTML           = '<div class="alert-empty">Log cleared</div>';
 }
 
 /* ════════════════════════════════════════════
    SENSOR CARD UPDATER
    ════════════════════════════════════════════ */
 function updateCard(cardId, valId, fillId, deltaId, val, prevVal, min, max, isAlert) {
-  const card = document.getElementById(cardId);
+  document.getElementById(cardId).classList.toggle('alert-card', isAlert);
   document.getElementById(valId).textContent = val.toFixed(1);
-  document.getElementById(valId).className = `card-value val-transition${isAlert ? ' alert-val' : ''}`;
+  document.getElementById(valId).className   =
+    `card-value val-transition${isAlert ? ' alert-val' : ''}`;
 
   const pct = Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100));
   document.getElementById(fillId).style.width = pct + '%';
-  isAlert
-    ? card.classList.add('alert-card')
-    : card.classList.remove('alert-card');
 
   if (prevVal !== null) {
-    const d = val - prevVal;
+    const d  = val - prevVal;
     const el = document.getElementById(deltaId);
-    const sign = d >= 0 ? '+' : '';
-    el.textContent = `${d >= 0 ? '↑' : '↓'} ${sign}${d.toFixed(1)}`;
-    el.className = `delta ${d > 0.05 ? 'up' : d < -0.05 ? 'down' : ''}`;
+    el.textContent = `${d >= 0 ? '↑' : '↓'} ${d >= 0 ? '+' : ''}${d.toFixed(1)}`;
+    el.className   = `delta ${d > 0.05 ? 'up' : d < -0.05 ? 'down' : ''}`;
   }
 }
 
 /* ════════════════════════════════════════════
    STATUS PANEL
    ════════════════════════════════════════════ */
-function updateStatus(data) {
-  const isAlert = data.status === 'ALERT';
+function updateStatus(isAlert, tempAlert, vibAlert, soundAlert) {
   const badge  = document.getElementById('status-badge');
   const detail = document.getElementById('status-detail');
   const iBar   = document.getElementById('integrity-bar');
@@ -1296,23 +1506,36 @@ function updateStatus(data) {
 
   if (isAlert) {
     badge.className = 'status-badge alert';
-    badge.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span>ALERT</span>`;
-    const causes = data.triggers.map(t => t.sensor).join(', ');
-    detail.textContent = `Anomaly detected — ${causes}`;
-    detail.style.color = 'var(--red)';
-    const ig = Math.max(22, 92 - (data.triggers.length * 24));
-    iBar.style.width = ig + '%';
-    iBar.style.background = 'var(--red-lt)';
-    iPct.textContent = ig + '%';
+    badge.innerHTML =
+      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg><span>ALERT</span>`;
+
+    const causes = [
+      ...(tempAlert  ? ['temperature'] : []),
+      ...(vibAlert   ? ['vibration']   : []),
+      ...(soundAlert ? ['sound']       : []),
+    ];
+    detail.textContent  = `Anomaly detected — ${causes.join(', ')}`;
+    detail.style.color  = 'var(--red)';
+    const ig = Math.max(22, 92 - causes.length * 24);
+    iBar.style.width       = ig + '%';
+    iBar.style.background  = 'var(--red-lt)';
+    iPct.textContent       = ig + '%';
   } else {
     badge.className = 'status-badge normal';
-    badge.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg><span>NORMAL</span>`;
-    detail.textContent = 'All sensors within safe thresholds';
-    detail.style.color = 'var(--muted)';
+    badge.innerHTML =
+      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg><span>NORMAL</span>`;
+    detail.textContent  = 'All sensors within safe thresholds';
+    detail.style.color  = 'var(--muted)';
     const ig = 88 + Math.floor(Math.random() * 8);
-    iBar.style.width = ig + '%';
-    iBar.style.background = 'var(--green-lt)';
-    iPct.textContent = ig + '%';
+    iBar.style.width       = ig + '%';
+    iBar.style.background  = 'var(--green-lt)';
+    iPct.textContent       = ig + '%';
   }
 }
 
@@ -1321,99 +1544,109 @@ function updateStatus(data) {
    ════════════════════════════════════════════ */
 function applyData(data) {
   readingCount++;
-  const { temperature: temp, vibration: vib, strain, status } = data;
-  const isAlert   = status === 'ALERT';
-  const tempAlert = temp > 45;
-  const vibAlert  = vib  > 4.0;
-  const strAlert  = strain > 85;
 
-  // Sensor cards
-  updateCard('sc-temp',   'cv-temp',   'cf-temp',   'cd-temp',   temp,   prevTemp,   25,  50,  tempAlert);
-  updateCard('sc-vib',    'cv-vib',    'cf-vib',    'cd-vib',    vib,    prevVib,    0.1, 5.0, vibAlert);
-  updateCard('sc-strain', 'cv-strain', 'cf-strain', 'cd-strain', strain, prevStrain, 10,  100, strAlert);
+  // Safely extract fields — fall back to 0 if backend doesn't provide them yet
+  const temp   = Number(data.temperature ?? 0);
+  const vib    = Number(data.vibration   ?? 0);
+  const motion = Number(data.motion      ?? 0);
+  const sound  = Number(data.sound       ?? 0);
 
-  // Status
-  updateStatus(data);
+  // Alert logic
+  const tempAlert  = temp  > THRESH_TEMP;
+  const vibAlert   = vib   > THRESH_VIB;
+  const soundAlert = sound > THRESH_SOUND;
+  const isAlert    = tempAlert || vibAlert || soundAlert;
 
-  // Twin
-  renderBridge(isAlert, tempAlert, vibAlert, strAlert, temp.toFixed(1), vib.toFixed(2), strain.toFixed(0));
+  // ── Sensor cards ──────────────────────────────────────────────────────
+  updateCard('sc-temp',   'cv-temp',   'cf-temp',   'cd-temp',   temp,   prevTemp,   25,   50,   tempAlert);
+  updateCard('sc-vib',    'cv-vib',    'cf-vib',    'cd-vib',    vib,    prevVib,    0,    50,   vibAlert);
+  updateCard('sc-motion', 'cv-motion', 'cf-motion', 'cd-motion', motion, prevMotion, 0,    10,   false);
+  updateCard('sc-sound',  'cv-sound',  'cf-sound',  'cd-sound',  sound,  prevSound,  0,    100,  soundAlert);
 
-  // Charts
+  // ── System status ─────────────────────────────────────────────────────
+  updateStatus(isAlert, tempAlert, vibAlert, soundAlert);
+
+  // ── 3D Twin ───────────────────────────────────────────────────────────
+  TWIN.setAlert(isAlert, vib);
+
+  // ── Charts ────────────────────────────────────────────────────────────
   document.getElementById('chart-temp-cur').textContent = temp.toFixed(1);
-  document.getElementById('chart-vib-cur').textContent  = vib.toFixed(2);
+  document.getElementById('chart-vib-cur').textContent  = vib.toFixed(1);
 
   tempHistory.push(temp);
   vibHistory.push(vib);
   if (tempHistory.length > MAX_HISTORY) { tempHistory.shift(); vibHistory.shift(); }
 
-  tempChart.data.datasets[0].data       = [...tempHistory];
-  tempChart.data.datasets[0].borderColor = tempAlert ? '#c0392b' : '#c87c1a';
+  tempChart.data.datasets[0].data            = [...tempHistory];
+  tempChart.data.datasets[0].borderColor     = tempAlert ? '#c0392b' : '#c87c1a';
   tempChart.data.datasets[0].backgroundColor = tempAlert ? 'rgba(192,57,43,.05)' : 'rgba(200,124,26,.05)';
   tempChart.update('none');
 
-  vibChart.data.datasets[0].data        = [...vibHistory];
-  vibChart.data.datasets[0].borderColor  = vibAlert  ? '#c0392b' : '#2563a8';
-  vibChart.data.datasets[0].backgroundColor = vibAlert  ? 'rgba(192,57,43,.05)' : 'rgba(37,99,168,.05)';
+  vibChart.data.datasets[0].data             = [...vibHistory];
+  vibChart.data.datasets[0].borderColor      = vibAlert  ? '#c0392b' : '#2563a8';
+  vibChart.data.datasets[0].backgroundColor  = vibAlert  ? 'rgba(192,57,43,.05)' : 'rgba(37,99,168,.05)';
   vibChart.update('none');
 
-  // Alerts
+  // ── Alert log ─────────────────────────────────────────────────────────
   if (isAlert && !wasAlert) {
-    data.triggers.forEach(t => addAlert('critical', t.message));
+    if (tempAlert)  addAlert('critical', `High temperature ${temp.toFixed(1)}°C — thermal stress on cables`);
+    if (vibAlert)   addAlert('critical', `High vibration ${vib.toFixed(1)} m/s² — structural resonance detected`);
+    if (soundAlert) addAlert('critical', `High sound level ${sound.toFixed(0)} dB — possible impact event`);
   }
   if (!isAlert && wasAlert && normalRun > 0) {
     addAlert('resolved', 'System returned to NORMAL — all sensors within safe thresholds');
   }
 
-  normalRun = isAlert ? 0 : normalRun + 1;
-  wasAlert  = isAlert;
-  prevTemp  = temp;
-  prevVib   = vib;
-  prevStrain = strain;
+  normalRun  = isAlert ? 0 : normalRun + 1;
+  wasAlert   = isAlert;
+  prevTemp   = temp;
+  prevVib    = vib;
+  prevMotion = motion;
+  prevSound  = sound;
 
-  // Top bar
-  const scoreEl = document.getElementById('tb-score');
-  scoreEl.textContent = data.score;
-  scoreEl.className = `tb-val ${data.score > 0.5 ? 'bad' : data.score > 0.25 ? 'hi' : 'good'}`;
+  // ── Top bar ───────────────────────────────────────────────────────────
+  const soundEl = document.getElementById('tb-sound');
+  soundEl.textContent = sound.toFixed(0);
+  soundEl.className   = `tb-val ${soundAlert ? 'bad' : sound > 35 ? 'hi' : 'good'}`;
 
-  const ts = new Date(data.timestamp);
-  document.getElementById('tb-ts').textContent = ts.toLocaleTimeString('en-US', { hour12: false });
-  document.getElementById('tb-mode').textContent   = data.source === 'hardware' ? 'HW' : 'SIM';
+  if (data.timestamp) {
+    const ts = new Date(data.timestamp);
+    document.getElementById('tb-ts').textContent = ts.toLocaleTimeString('en-US', { hour12: false });
+  }
+
+  document.getElementById('tb-mode').textContent     = data.source === 'hardware' ? 'HW' : 'SIM';
   document.getElementById('tb-readings').textContent = readingCount;
 }
 
 /* ════════════════════════════════════════════
    API POLLING
    ════════════════════════════════════════════ */
-let consecutiveErrors = 0;
-
 async function fetchData() {
   try {
     const res = await fetch(`${API_BASE}/api/data`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
 
-    // Mark online
     consecutiveErrors = 0;
-    document.getElementById('api-dot').className = 'api-dot online';
+    document.getElementById('api-dot').className        = 'api-dot online';
     document.getElementById('api-status-text').textContent = 'API Connected';
     document.getElementById('conn-error').classList.remove('visible');
 
     applyData(data);
 
     if (readingCount === 1) {
-      addAlert('info', `Connected to ${API_BASE}/api/data · mode: ${data.source}`);
+      addAlert('info', `Connected to ${API_BASE}/api/data · mode: ${data.source ?? 'unknown'}`);
     }
 
   } catch (err) {
     consecutiveErrors++;
-    document.getElementById('api-dot').className = 'api-dot offline';
+    document.getElementById('api-dot').className        = 'api-dot offline';
     document.getElementById('api-status-text').textContent = 'API Offline';
     if (consecutiveErrors === 2) {
       document.getElementById('conn-error').classList.add('visible');
       addAlert('warning', `Backend unreachable — retrying (${API_BASE}/api/data)`);
     }
   } finally {
-    // Always hide loading overlay after first attempt
     document.getElementById('loading').classList.add('hidden');
   }
 }
@@ -1421,11 +1654,14 @@ async function fetchData() {
 /* ════════════════════════════════════════════
    BOOT
    ════════════════════════════════════════════ */
-renderBridge(false, false, false, false, '—', '—', '—');
+window.addEventListener('load', () => {
+  // Initialise Three.js scene after all resources are available
+  TWIN.init();
 
-// First fetch immediately, then poll
-fetchData();
-setInterval(fetchData, POLL_MS);
+  // Start polling
+  fetchData();
+  setInterval(fetchData, POLL_MS);
+});
 </script>
 </body>
 </html>
