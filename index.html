@@ -238,7 +238,6 @@ body::before {
    ════════════════════════════════════════════ */
 .sensor-row { grid-column: 1 / 2; }
 
-/* 4 equal sensor cards + 1 narrower status card */
 .sensor-cards {
   display: grid;
   grid-template-columns: repeat(4, 1fr) 0.72fr;
@@ -370,6 +369,13 @@ body::before {
   border: 1px solid rgba(42,125,79,.25);
 }
 
+.status-badge.warning {
+  background: var(--amber-dim);
+  color: var(--amber);
+  border: 1px solid rgba(200,124,26,.35);
+  animation: badge-pulse-warn 1.8s ease-in-out infinite;
+}
+
 .status-badge.alert {
   background: var(--red-dim);
   color: var(--red);
@@ -382,6 +388,11 @@ body::before {
   50%       { box-shadow: 0 0 0 6px rgba(192,57,43,0); }
 }
 
+@keyframes badge-pulse-warn {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(200,124,26,.2); }
+  50%       { box-shadow: 0 0 0 5px rgba(200,124,26,0); }
+}
+
 .status-badge svg { width: 14px; height: 14px; }
 
 .status-detail {
@@ -390,6 +401,46 @@ body::before {
   color: var(--muted);
   line-height: 1.6;
   transition: color .3s;
+}
+
+/* ── Anomaly Score Widget ── */
+.anomaly-score-wrap {
+  width: 100%;
+  margin-top: 2px;
+}
+.anomaly-score-label {
+  font-family: var(--f-mono);
+  font-size: 8.5px;
+  color: var(--muted);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.anomaly-score-val {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  transition: color .3s;
+}
+.anomaly-score-val.warn  { color: var(--amber); }
+.anomaly-score-val.alert { color: var(--red); }
+
+.anomaly-track {
+  height: 5px;
+  background: var(--warm);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 3px;
+}
+.anomaly-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--green-lt);
+  transition: width .5s ease, background .3s;
 }
 
 .integrity-wrap { width: 100%; }
@@ -429,7 +480,7 @@ body::before {
   background: var(--card);
   border: 1px solid var(--rule2);
   border-radius: var(--r-card);
-  padding: 16px 18px;
+  padding: 16px 18px 18px;
   box-shadow: var(--shadow);
 }
 
@@ -454,7 +505,7 @@ body::before {
   font-size: 11px;
 }
 
-.twin-legend { display: flex; gap: 10px; }
+.twin-legend { display: flex; gap: 10px; align-items: center; }
 
 .tl-item {
   display: flex;
@@ -467,23 +518,98 @@ body::before {
 
 .tl-dot { width: 7px; height: 7px; border-radius: 50%; }
 
-/* 3D Canvas Container */
-#twin-canvas-wrap {
+/* ════════════════════════════════════════════
+   SVG BRIDGE DIGITAL TWIN
+   ════════════════════════════════════════════ */
+
+/* Container for the 2D/SVG twin */
+#twin-svg-wrap {
   width: 100%;
-  height: 240px;
   border-radius: 4px;
   border: 1px solid var(--rule);
   overflow: hidden;
-  background: #f8f6f1;
+  background: #0e1218;
   position: relative;
 }
 
-#twin-canvas-wrap canvas {
-  display: block;
-  width: 100% !important;
-  height: 100% !important;
+/* Row below the bridge SVG: zone data panels */
+.zone-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  border-top: 1px solid rgba(255,255,255,.06);
 }
 
+.zone-panel {
+  padding: 10px 14px;
+  border-right: 1px solid rgba(255,255,255,.06);
+  position: relative;
+  transition: background .4s;
+}
+.zone-panel:last-child { border-right: none; }
+
+.zp-header {
+  font-family: var(--f-disp);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.35);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.zp-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #38a169;
+  transition: background .4s, box-shadow .4s;
+}
+
+.zp-dot.warn  { background: #f0a94a; box-shadow: 0 0 6px rgba(240,169,74,.5); }
+.zp-dot.alert { background: #e05252; box-shadow: 0 0 6px rgba(224,82,82,.6); animation: dot-blink 0.8s step-end infinite; }
+
+@keyframes dot-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.15; }
+}
+
+.zp-sensor {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  color: rgba(255,255,255,.55);
+  line-height: 1.9;
+}
+.zp-sensor span {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,.85);
+  transition: color .3s;
+}
+.zp-sensor span.alert-val { color: #e05252; }
+.zp-sensor span.warn-val  { color: #f0a94a; }
+
+.zp-status {
+  font-family: var(--f-mono);
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-top: 5px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  display: inline-block;
+  background: rgba(56,161,105,.18);
+  color: #68d391;
+  border: 1px solid rgba(56,161,105,.3);
+  transition: all .3s;
+}
+.zp-status.warn  { background: rgba(240,169,74,.15); color: #f0a94a; border-color: rgba(240,169,74,.3); }
+.zp-status.alert { background: rgba(224,82,82,.16);  color: #e05252; border-color: rgba(224,82,82,.32); }
+
+/* overlay badge on top-left of SVG */
 .twin-status-overlay {
   position: absolute;
   top: 8px; left: 8px;
@@ -494,25 +620,44 @@ body::before {
   font-weight: 600;
   letter-spacing: .05em;
   pointer-events: none;
+  z-index: 10;
   transition: all .3s;
-  background: rgba(42,125,79,.1);
-  color: #2a7d4f;
-  border: 1px solid rgba(42,125,79,.2);
+  background: rgba(42,125,79,.14);
+  color: #68d391;
+  border: 1px solid rgba(42,125,79,.28);
 }
-
+.twin-status-overlay.warn {
+  background: rgba(200,124,26,.18);
+  color: #f0a94a;
+  border-color: rgba(200,124,26,.38);
+}
 .twin-status-overlay.alert {
-  background: rgba(192,57,43,.12);
-  color: #c0392b;
-  border-color: rgba(192,57,43,.28);
+  background: rgba(192,57,43,.18);
+  color: #e05252;
+  border-color: rgba(192,57,43,.38);
+  animation: overlay-blink 1s ease-in-out infinite;
 }
 
-.twin-hint {
+@keyframes overlay-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+
+/* score badge top-right of SVG */
+.twin-score-badge {
   position: absolute;
-  bottom: 7px; right: 9px;
+  top: 8px; right: 8px;
+  padding: 4px 9px;
+  border-radius: 3px;
   font-family: var(--f-mono);
-  font-size: 8px;
-  color: rgba(0,0,0,.22);
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: .04em;
   pointer-events: none;
+  z-index: 10;
+  background: rgba(10,14,20,.6);
+  color: rgba(255,255,255,.5);
+  border: 1px solid rgba(255,255,255,.08);
 }
 
 /* ── Charts ── */
@@ -751,7 +896,7 @@ body::before {
     </div>
     <div>
       <div class="header-title">Smart Structural Health Monitoring</div>
-      <div class="header-sub">3D Digital Twin · Real-time ESP32 Sensor Analysis</div>
+      <div class="header-sub">Digital Twin · Real-time ESP32 Sensor Analysis · BRIDGE-001</div>
     </div>
   </div>
   <div class="header-right">
@@ -819,6 +964,11 @@ body::before {
       <div class="tb-label">Session Alerts</div>
       <div class="tb-val" id="tb-alert-count">0</div>
     </div>
+    <div class="tb-sep"></div>
+    <div class="tb-item">
+      <div class="tb-label">Anomaly Score</div>
+      <div class="tb-val" id="tb-anomaly-score">—</div>
+    </div>
   </div>
 
   <!-- MAIN GRID -->
@@ -856,14 +1006,14 @@ body::before {
             Vibration
           </div>
           <div class="card-value val-transition" id="cv-vib">—</div>
-          <div class="card-unit">m/s² · threshold 40</div>
+          <div class="card-unit">m/s² · threshold 4</div>
           <div class="card-track">
             <div class="card-fill" id="cf-vib" style="width:0%; background: var(--sky)"></div>
           </div>
           <div class="card-meta">
             <span>0 min</span>
             <span class="delta" id="cd-vib">—</span>
-            <span>50 max</span>
+            <span>10 max</span>
           </div>
         </div>
 
@@ -909,7 +1059,7 @@ body::before {
           </div>
         </div>
 
-        <!-- System Status -->
+        <!-- System Status + Anomaly Score -->
         <div class="status-card">
           <div class="card-label" style="margin-bottom:0">System Status</div>
           <div class="status-badge normal" id="status-badge">
@@ -919,9 +1069,22 @@ body::before {
             <span>NORMAL</span>
           </div>
           <div class="status-detail" id="status-detail">Awaiting data…</div>
+
+          <!-- Anomaly Score -->
+          <div class="anomaly-score-wrap">
+            <div class="anomaly-score-label">
+              <span>Anomaly Score</span>
+              <span class="anomaly-score-val" id="anomaly-score-val">—</span>
+            </div>
+            <div class="anomaly-track">
+              <div class="anomaly-fill" id="anomaly-fill" style="width:0%"></div>
+            </div>
+          </div>
+
+          <!-- Structural Integrity -->
           <div class="integrity-wrap">
             <div class="integrity-labels">
-              <span>Structural Integrity</span>
+              <span>Integrity</span>
               <span id="integrity-pct">—</span>
             </div>
             <div class="integrity-track">
@@ -955,29 +1118,337 @@ body::before {
       </div>
     </div>
 
-    <!-- ── 3D DIGITAL TWIN ── -->
+    <!-- ════════════════════════════════════════════
+         2D DIGITAL TWIN BRIDGE VISUALIZATION
+         ════════════════════════════════════════════ -->
     <div class="twin-col">
-      <div class="section-label">3D Digital Twin Visualization</div>
+      <div class="section-label">Digital Twin — Bridge-001 Structural Model</div>
       <div class="twin-card">
         <div class="twin-meta">
           <div class="twin-id">
-            <strong>BRIDGE-STRUCT-001</strong>
-            Span 120 m · Pre-stressed concrete · 4 sensor nodes
+            <strong>BRIDGE-STRUCT-001 · Suspension Bridge</strong>
+            Span 120 m · Pre-stressed Concrete · 3 Sensor Zones · 4 Nodes
           </div>
           <div class="twin-legend">
-            <div class="tl-item"><div class="tl-dot" style="background:var(--green-lt)"></div>Safe</div>
-            <div class="tl-item"><div class="tl-dot" style="background:var(--amber)"></div>Monitor</div>
-            <div class="tl-item"><div class="tl-dot" style="background:var(--red-lt)"></div>Alert</div>
+            <div class="tl-item"><div class="tl-dot" style="background:#38a169"></div>Safe</div>
+            <div class="tl-item"><div class="tl-dot" style="background:#f0a94a"></div>Warning</div>
+            <div class="tl-item"><div class="tl-dot" style="background:#e05252"></div>Alert</div>
           </div>
         </div>
 
-        <!-- Three.js renders into this container -->
-        <div id="twin-canvas-wrap">
+        <!-- SVG Bridge Container -->
+        <div id="twin-svg-wrap" style="position:relative;">
+          <!-- Status overlays -->
           <div class="twin-status-overlay" id="twin-overlay">✓ SAFE</div>
-          <div class="twin-hint">Auto-rotating 3D view</div>
-        </div>
-      </div>
-    </div>
+          <div class="twin-score-badge" id="twin-score-badge">Score: —</div>
+
+          <!-- The SVG bridge drawing -->
+          <svg id="bridge-svg" viewBox="0 0 900 260" xmlns="http://www.w3.org/2000/svg"
+               style="display:block; width:100%; height:auto;">
+
+            <!-- ── Background ── -->
+            <defs>
+              <!-- Sky gradient -->
+              <linearGradient id="sky-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#0e1623"/>
+                <stop offset="100%" stop-color="#172030"/>
+              </linearGradient>
+              <!-- Water gradient -->
+              <linearGradient id="water-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#1a3a5c" stop-opacity="0.8"/>
+                <stop offset="100%" stop-color="#0e1e30" stop-opacity="0.6"/>
+              </linearGradient>
+              <!-- Deck gradient SAFE -->
+              <linearGradient id="deck-grad-safe" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#2a7d4f"/>
+                <stop offset="100%" stop-color="#1f5e3c"/>
+              </linearGradient>
+              <!-- Deck gradient WARN -->
+              <linearGradient id="deck-grad-warn" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#b86c0e"/>
+                <stop offset="100%" stop-color="#8a5008"/>
+              </linearGradient>
+              <!-- Deck gradient ALERT -->
+              <linearGradient id="deck-grad-alert" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#c0392b"/>
+                <stop offset="100%" stop-color="#922b21"/>
+              </linearGradient>
+              <!-- Zone fills -->
+              <linearGradient id="zone-a-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#38a169" stop-opacity="0.18"/>
+                <stop offset="100%" stop-color="#38a169" stop-opacity="0.04"/>
+              </linearGradient>
+              <linearGradient id="zone-b-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#38a169" stop-opacity="0.18"/>
+                <stop offset="100%" stop-color="#38a169" stop-opacity="0.04"/>
+              </linearGradient>
+              <linearGradient id="zone-c-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#38a169" stop-opacity="0.18"/>
+                <stop offset="100%" stop-color="#38a169" stop-opacity="0.04"/>
+              </linearGradient>
+              <!-- Grid pattern -->
+              <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+                <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="0.5"/>
+              </pattern>
+              <!-- Glow filter for alert -->
+              <filter id="glow-red" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
+                <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <filter id="glow-warn" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <filter id="glow-green" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <filter id="node-glow" x="-60%" y="-60%" width="220%" height="220%">
+                <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <!-- Shadow for deck -->
+              <filter id="deck-shadow" x="-5%" y="-50%" width="110%" height="300%">
+                <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="rgba(0,0,0,0.5)"/>
+              </filter>
+            </defs>
+
+            <!-- Sky background -->
+            <rect width="900" height="260" fill="url(#sky-grad)"/>
+            <!-- Grid overlay -->
+            <rect width="900" height="260" fill="url(#grid)"/>
+
+            <!-- ── Horizon / ground lines ── -->
+            <line x1="0" y1="195" x2="900" y2="195" stroke="rgba(255,255,255,.05)" stroke-width="1"/>
+
+            <!-- ── Water body ── -->
+            <rect x="120" y="195" width="660" height="65" fill="url(#water-grad)" rx="2"/>
+            <!-- Water shimmer lines -->
+            <line x1="150" y1="208" x2="350" y2="208" stroke="rgba(100,180,255,.07)" stroke-width="1"/>
+            <line x1="400" y1="215" x2="750" y2="215" stroke="rgba(100,180,255,.07)" stroke-width="1"/>
+            <line x1="200" y1="225" x2="680" y2="225" stroke="rgba(100,180,255,.05)" stroke-width="1"/>
+
+            <!-- ── Embankments / land ── -->
+            <!-- Left embankment -->
+            <polygon points="0,195 120,195 80,215 0,215" fill="#1e2a1e" opacity="0.9"/>
+            <polygon points="0,215 80,215 0,260" fill="#141e14" opacity="0.9"/>
+            <!-- Right embankment -->
+            <polygon points="900,195 780,195 820,215 900,215" fill="#1e2a1e" opacity="0.9"/>
+            <polygon points="900,215 820,215 900,260" fill="#141e14" opacity="0.9"/>
+
+            <!-- ── Abutments (bridge anchor piers) ── -->
+            <!-- Left abutment -->
+            <rect x="75" y="170" width="45" height="45" fill="#2d3748" rx="2"/>
+            <rect x="80" y="165" width="35" height="10" fill="#4a5568" rx="1"/>
+            <!-- Right abutment -->
+            <rect x="780" y="170" width="45" height="45" fill="#2d3748" rx="2"/>
+            <rect x="785" y="165" width="35" height="10" fill="#4a5568" rx="1"/>
+
+            <!-- ── ZONE BACKGROUNDS (beneath deck) ── -->
+            <!-- Zone A: left third -->
+            <rect id="zone-a-bg" x="120" y="148" width="220" height="30"
+                  fill="url(#zone-a-grad)" rx="1" opacity="1"/>
+            <!-- Zone B: center -->
+            <rect id="zone-b-bg" x="340" y="130" width="220" height="48"
+                  fill="url(#zone-b-grad)" rx="1" opacity="1"/>
+            <!-- Zone C: right third -->
+            <rect id="zone-c-bg" x="560" y="148" width="220" height="30"
+                  fill="url(#zone-c-grad)" rx="1" opacity="1"/>
+
+            <!-- ── ZONE LABELS ── -->
+            <text x="183" y="145" font-family="'IBM Plex Mono',monospace" font-size="9"
+                  fill="rgba(56,161,105,0.65)" font-weight="600" letter-spacing="2" text-anchor="middle"
+                  id="zone-a-label">ZONE A</text>
+            <text x="450" y="127" font-family="'IBM Plex Mono',monospace" font-size="9"
+                  fill="rgba(56,161,105,0.65)" font-weight="600" letter-spacing="2" text-anchor="middle"
+                  id="zone-b-label">ZONE B</text>
+            <text x="717" y="145" font-family="'IBM Plex Mono',monospace" font-size="9"
+                  fill="rgba(56,161,105,0.65)" font-weight="600" letter-spacing="2" text-anchor="middle"
+                  id="zone-c-label">ZONE C</text>
+
+            <!-- ── BRIDGE DECK (3-segment with slight 3D perspective) ── -->
+            <!-- Deck bottom shadow -->
+            <rect x="118" y="173" width="664" height="6" fill="rgba(0,0,0,0.35)" rx="1"/>
+            <!-- Main deck segments (3 zones, independently colorable) -->
+            <rect id="deck-zone-a" x="120" y="155" width="218" height="18" rx="0"
+                  fill="url(#deck-grad-safe)" filter="url(#deck-shadow)"/>
+            <rect id="deck-zone-b" x="338" y="150" width="224" height="23" rx="0"
+                  fill="url(#deck-grad-safe)" filter="url(#deck-shadow)"/>
+            <rect id="deck-zone-c" x="562" y="155" width="218" height="18" rx="0"
+                  fill="url(#deck-grad-safe)" filter="url(#deck-shadow)"/>
+            <!-- Deck join seams -->
+            <line x1="338" y1="150" x2="338" y2="173" stroke="rgba(0,0,0,0.4)" stroke-width="2"/>
+            <line x1="562" y1="150" x2="562" y2="173" stroke="rgba(0,0,0,0.4)" stroke-width="2"/>
+            <!-- Road surface overlay -->
+            <rect x="120" y="155" width="660" height="5" fill="rgba(120,140,150,0.3)" rx="0"/>
+            <!-- Lane markings -->
+            <line x1="160" y1="157" x2="200" y2="157" stroke="rgba(255,255,200,0.35)" stroke-width="1.5" stroke-dasharray="20,15"/>
+            <line x1="250" y1="157" x2="560" y2="157" stroke="rgba(255,255,200,0.35)" stroke-width="1.5" stroke-dasharray="20,15"/>
+            <line x1="600" y1="157" x2="740" y2="157" stroke="rgba(255,255,200,0.35)" stroke-width="1.5" stroke-dasharray="20,15"/>
+            <!-- Deck edge rail top -->
+            <rect x="120" y="153" width="660" height="3" fill="rgba(100,120,130,0.5)"/>
+
+            <!-- ── LEFT TOWER ── -->
+            <!-- Tower base -->
+            <rect x="290" y="155" width="16" height="40" fill="#4a5568" rx="1"/>
+            <!-- Tower legs (going up) -->
+            <rect id="tower-left" x="294" y="45" width="8" height="115" fill="#5a6780" rx="1"/>
+            <!-- Tower crossbeam -->
+            <rect x="282" y="90" width="32" height="6" fill="#4a5568" rx="1"/>
+            <!-- Tower cap -->
+            <rect x="290" y="38" width="16" height="10" fill="#718096" rx="1"/>
+            <!-- Tower cap light -->
+            <circle id="cap-light-left" cx="298" cy="41" r="3" fill="#68d391" opacity="0.9" filter="url(#glow-green)"/>
+
+            <!-- ── RIGHT TOWER ── -->
+            <rect x="594" y="155" width="16" height="40" fill="#4a5568" rx="1"/>
+            <rect id="tower-right" x="598" y="45" width="8" height="115" fill="#5a6780" rx="1"/>
+            <rect x="586" y="90" width="32" height="6" fill="#4a5568" rx="1"/>
+            <rect x="594" y="38" width="16" height="10" fill="#718096" rx="1"/>
+            <circle id="cap-light-right" cx="602" cy="41" r="3" fill="#68d391" opacity="0.9" filter="url(#glow-green)"/>
+
+            <!-- ── SUSPENSION CABLES (catenary curves) ── -->
+            <!-- Main cable left to right (top) -->
+            <path id="cable-main-top"
+              d="M 298 45 Q 298 45 450 95 Q 602 45 602 45"
+              fill="none" stroke="#8ab4cc" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- Main cable (slight offset for depth) -->
+            <path id="cable-main-bot"
+              d="M 298 50 Q 298 50 450 100 Q 602 50 602 50"
+              fill="none" stroke="#6a9ab0" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+
+            <!-- ── HANGER CABLES (vertical suspenders) ── -->
+            <!-- Hangers at specific x positions – y from cable curve to deck -->
+            <!-- Computed: y_cable = 45 + (95-45)*4*(t)(1-t), t=(x-298)/(602-298) -->
+            <!-- Hanger at x=340 -->
+            <line id="hgr-1" x1="340" y1="62" x2="340" y2="155" stroke="#5a7a90" stroke-width="1" opacity="0.7"/>
+            <!-- Hanger at x=380 -->
+            <line id="hgr-2" x1="380" y1="74" x2="380" y2="155" stroke="#5a7a90" stroke-width="1" opacity="0.7"/>
+            <!-- Hanger at x=420 -->
+            <line id="hgr-3" x1="420" y1="83" x2="420" y2="155" stroke="#5a7a90" stroke-width="1" opacity="0.7"/>
+            <!-- Hanger at x=450 (midspan) -->
+            <line id="hgr-4" x1="450" y1="95" x2="450" y2="155" stroke="#5a7a90" stroke-width="1.5" opacity="0.8"/>
+            <!-- Hanger at x=480 -->
+            <line id="hgr-5" x1="480" y1="83" x2="480" y2="155" stroke="#5a7a90" stroke-width="1" opacity="0.7"/>
+            <!-- Hanger at x=520 -->
+            <line id="hgr-6" x1="520" y1="74" x2="520" y2="155" stroke="#5a7a90" stroke-width="1" opacity="0.7"/>
+            <!-- Hanger at x=560 -->
+            <line id="hgr-7" x1="560" y1="62" x2="560" y2="155" stroke="#5a7a90" stroke-width="1" opacity="0.7"/>
+
+            <!-- ── SENSOR NODES (labeled, colored by health) ── -->
+            <!-- Node S1 — Zone A, left tower base (Temperature sensor) -->
+            <g id="node-s1" transform="translate(230, 150)">
+              <circle r="7" fill="#38a169" stroke="#68d391" stroke-width="1.5" opacity="0.9" filter="url(#node-glow)"/>
+              <circle r="3" fill="white" opacity="0.9"/>
+              <text y="-13" font-family="'IBM Plex Mono',monospace" font-size="8"
+                    fill="rgba(255,255,255,0.7)" text-anchor="middle" font-weight="600">S1</text>
+              <text y="20" font-family="'IBM Plex Mono',monospace" font-size="8"
+                    fill="rgba(255,255,255,0.5)" text-anchor="middle" id="node-s1-val">T:—°C</text>
+            </g>
+
+            <!-- Node S2 — Zone B, left hanger area (Vibration sensor) -->
+            <g id="node-s2" transform="translate(390, 147)">
+              <circle r="7" fill="#38a169" stroke="#68d391" stroke-width="1.5" opacity="0.9" filter="url(#node-glow)"/>
+              <circle r="3" fill="white" opacity="0.9"/>
+              <text y="-13" font-family="'IBM Plex Mono',monospace" font-size="8"
+                    fill="rgba(255,255,255,0.7)" text-anchor="middle" font-weight="600">S2</text>
+              <text y="20" font-family="'IBM Plex Mono',monospace" font-size="8"
+                    fill="rgba(255,255,255,0.5)" text-anchor="middle" id="node-s2-val">V:—m/s²</text>
+            </g>
+
+            <!-- Node S3 — Zone B, midspan (Sound/Strain sensor) -->
+            <g id="node-s3" transform="translate(510, 142)">
+              <circle r="7" fill="#38a169" stroke="#68d391" stroke-width="1.5" opacity="0.9" filter="url(#node-glow)"/>
+              <circle r="3" fill="white" opacity="0.9"/>
+              <text y="-13" font-family="'IBM Plex Mono',monospace" font-size="8"
+                    fill="rgba(255,255,255,0.7)" text-anchor="middle" font-weight="600">S3</text>
+              <text y="20" font-family="'IBM Plex Mono',monospace" font-size="8"
+                    fill="rgba(255,255,255,0.5)" text-anchor="middle" id="node-s3-val">Snd:—dB</text>
+            </g>
+
+            <!-- Node S4 — Zone C, right area (Motion sensor) -->
+            <g id="node-s4" transform="translate(670, 150)">
+              <circle r="7" fill="#38a169" stroke="#68d391" stroke-width="1.5" opacity="0.9" filter="url(#node-glow)"/>
+              <circle r="3" fill="white" opacity="0.9"/>
+              <text y="-13" font-family="'IBM Plex Mono',monospace" font-size="8"
+                    fill="rgba(255,255,255,0.7)" text-anchor="middle" font-weight="600">S4</text>
+              <text y="20" font-family="'IBM Plex Mono',monospace" font-size="8"
+                    fill="rgba(255,255,255,0.5)" text-anchor="middle" id="node-s4-val">M:—g</text>
+            </g>
+
+            <!-- ── DIMENSION ANNOTATIONS ── -->
+            <!-- Span annotation -->
+            <line x1="120" y1="240" x2="780" y2="240" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+            <line x1="120" y1="235" x2="120" y2="245" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+            <line x1="780" y1="235" x2="780" y2="245" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+            <text x="450" y="252" font-family="'IBM Plex Mono',monospace" font-size="8"
+                  fill="rgba(255,255,255,0.2)" text-anchor="middle">120 m SPAN</text>
+
+            <!-- Zone dimension ticks -->
+            <text x="183" y="252" font-family="'IBM Plex Mono',monospace" font-size="7"
+                  fill="rgba(255,255,255,0.14)" text-anchor="middle">40 m</text>
+            <text x="450" y="252" font-family="'IBM Plex Mono',monospace" font-size="7"
+                  fill="rgba(255,255,255,0.14)" text-anchor="middle" id="span-label">120 m SPAN</text>
+            <text x="717" y="252" font-family="'IBM Plex Mono',monospace" font-size="7"
+                  fill="rgba(255,255,255,0.14)" text-anchor="middle">40 m</text>
+
+            <!-- ── COORDINATE GRID LABELS ── -->
+            <text x="10" y="50" font-family="'IBM Plex Mono',monospace" font-size="7"
+                  fill="rgba(255,255,255,0.15)">+60m</text>
+            <text x="10" y="160" font-family="'IBM Plex Mono',monospace" font-size="7"
+                  fill="rgba(255,255,255,0.15)">±0</text>
+            <text x="10" y="200" font-family="'IBM Plex Mono',monospace" font-size="7"
+                  fill="rgba(255,255,255,0.15)">−12m</text>
+
+          </svg>
+        </div><!-- /#twin-svg-wrap -->
+
+        <!-- Zone panels below bridge -->
+        <div class="zone-panels" style="background:#0e1218; border-radius:0 0 4px 4px;">
+
+          <!-- Zone A -->
+          <div class="zone-panel" id="zp-a">
+            <div class="zp-header">
+              <div class="zp-dot" id="zpd-a"></div>
+              Zone A — Left
+            </div>
+            <div class="zp-sensor">
+              Temp: <span id="zps-temp">—</span>°C<br>
+              Node: S1
+            </div>
+            <div class="zp-status" id="zps-a-status">SAFE</div>
+          </div>
+
+          <!-- Zone B -->
+          <div class="zone-panel" id="zp-b">
+            <div class="zp-header">
+              <div class="zp-dot" id="zpd-b"></div>
+              Zone B — Center
+            </div>
+            <div class="zp-sensor">
+              Vib: <span id="zps-vib">—</span> m/s²<br>
+              Snd: <span id="zps-snd">—</span> dB · Nodes: S2, S3
+            </div>
+            <div class="zp-status" id="zps-b-status">SAFE</div>
+          </div>
+
+          <!-- Zone C -->
+          <div class="zone-panel" id="zp-c">
+            <div class="zp-header">
+              <div class="zp-dot" id="zpd-c"></div>
+              Zone C — Right
+            </div>
+            <div class="zp-sensor">
+              Motion: <span id="zps-mot">—</span> g<br>
+              Node: S4
+            </div>
+            <div class="zp-status" id="zps-c-status">SAFE</div>
+          </div>
+
+        </div><!-- /.zone-panels -->
+
+      </div><!-- /.twin-card -->
+    </div><!-- /.twin-col -->
 
     <!-- ── CHARTS ── -->
     <div class="charts-col">
@@ -1013,7 +1484,6 @@ body::before {
 
 <!-- ══ SCRIPTS ══ -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <script>
 'use strict';
@@ -1025,9 +1495,9 @@ const API_BASE    = 'http://127.0.0.1:5000';
 const POLL_MS     = 2500;
 const MAX_HISTORY = 30;
 
-// Alert thresholds (from hardware spec)
+// Alert thresholds (per specification)
 const THRESH_TEMP  = 45;
-const THRESH_VIB   = 40;
+const THRESH_VIB   = 4;     // updated: vibration > 4 → alert
 const THRESH_SOUND = 50;
 
 /* ════════════════════════════════════════════
@@ -1094,6 +1564,7 @@ const chartDefaults = {
   }
 };
 
+// Temperature chart with threshold line
 const tempChart = new Chart(
   document.getElementById('chart-temp').getContext('2d'), {
     type: 'line',
@@ -1101,14 +1572,17 @@ const tempChart = new Chart(
       labels: Array(MAX_HISTORY).fill(''),
       datasets: [
         {
+          label: 'Temperature',
           data: Array(MAX_HISTORY).fill(null),
           borderColor: '#c87c1a',
           backgroundColor: 'rgba(200,124,26,.05)',
           fill: true,
         },
         {
+          // Threshold line
+          label: 'Threshold 45°C',
           data: Array(MAX_HISTORY).fill(THRESH_TEMP),
-          borderColor: 'rgba(192,57,43,.35)',
+          borderColor: 'rgba(192,57,43,.45)',
           borderDash: [5, 4],
           borderWidth: 1.5,
           pointRadius: 0,
@@ -1123,6 +1597,7 @@ const tempChart = new Chart(
   }
 );
 
+// Vibration chart with threshold line
 const vibChart = new Chart(
   document.getElementById('chart-vib').getContext('2d'), {
     type: 'line',
@@ -1130,14 +1605,17 @@ const vibChart = new Chart(
       labels: Array(MAX_HISTORY).fill(''),
       datasets: [
         {
+          label: 'Vibration',
           data: Array(MAX_HISTORY).fill(null),
           borderColor: '#2563a8',
           backgroundColor: 'rgba(37,99,168,.05)',
           fill: true,
         },
         {
+          // Threshold line
+          label: 'Threshold 4 m/s²',
           data: Array(MAX_HISTORY).fill(THRESH_VIB),
-          borderColor: 'rgba(192,57,43,.35)',
+          borderColor: 'rgba(192,57,43,.45)',
           borderDash: [5, 4],
           borderWidth: 1.5,
           pointRadius: 0,
@@ -1147,298 +1625,316 @@ const vibChart = new Chart(
     },
     options: {
       ...chartDefaults,
-      scales: { ...chartDefaults.scales, y: { ...chartDefaults.scales.y, min: 0, max: 55 } }
+      scales: { ...chartDefaults.scales, y: { ...chartDefaults.scales.y, min: 0, max: 10 } }
     }
   }
 );
 
 /* ════════════════════════════════════════════
-   THREE.JS  — 3D DIGITAL TWIN MODULE
+   SVG BRIDGE DIGITAL TWIN MODULE
+   Replaces Three.js with a detailed 2D
+   engineering-grade SVG visualization.
    ════════════════════════════════════════════ */
 const TWIN = (() => {
 
-  // Internal state
-  let scene, camera, renderer, bridgeGroup, alertPointLight;
-  const deckMats   = [];
-  const towerMats  = [];
-  const cableMats  = [];
-  let   cameraAngle  = 0;
-  let   currentVib   = 0;
-  let   initialized  = false;
+  // ── SVG element references (cached at init) ──────────────────────────────
+  let elems = {};
+  let _vibAnim = null; // requestAnimationFrame handle for shake
+  let _currentVib = 0;
+  let _isAlert = false;
+  let _isWarn  = false;
 
-  // Hex color palette
-  const HEX = {
-    DECK_SAFE:    0x2a7d4f,
-    DECK_ALERT:   0xc0392b,
-    TOWER_SAFE:   0x4a5568,
-    TOWER_ALERT:  0x8b2020,
-    CABLE_SAFE:   0x5a7f9a,
-    CABLE_ALERT:  0xe05252,
-    HANGER:       0x7a96b0,
-    ABUT:         0x5c6470,
-    ROAD:         0x7a8290,
-    GROUND:       0xdfd9ce,
-    WATER:        0x6baed6,
-    BG:           0xf8f6f1,
+  // Color palettes for each state
+  const COLORS = {
+    safe: {
+      deckFill:   '#2a7d4f',
+      deckStroke: '#38a169',
+      zoneGrad:   'rgba(56,161,105,0.18)',
+      zoneBorder: 'rgba(56,161,105,0.35)',
+      nodeCircle: '#38a169',
+      nodeGlow:   '#68d391',
+      cable:      '#8ab4cc',
+      tower:      '#5a6780',
+      capLight:   '#68d391',
+      capFilter:  'url(#glow-green)',
+      zoneLabel:  'rgba(56,161,105,0.65)',
+    },
+    warn: {
+      deckFill:   '#b86c0e',
+      deckStroke: '#f0a94a',
+      zoneGrad:   'rgba(240,169,74,0.18)',
+      zoneBorder: 'rgba(240,169,74,0.45)',
+      nodeCircle: '#c87c1a',
+      nodeGlow:   '#f0a94a',
+      cable:      '#c8a06a',
+      tower:      '#8a7040',
+      capLight:   '#f0a94a',
+      capFilter:  'url(#glow-warn)',
+      zoneLabel:  'rgba(240,169,74,0.7)',
+    },
+    alert: {
+      deckFill:   '#c0392b',
+      deckStroke: '#e05252',
+      zoneGrad:   'rgba(224,82,82,0.22)',
+      zoneBorder: 'rgba(224,82,82,0.55)',
+      nodeCircle: '#c0392b',
+      nodeGlow:   '#e05252',
+      cable:      '#c06060',
+      tower:      '#8b2020',
+      capLight:   '#e05252',
+      capFilter:  'url(#glow-red)',
+      zoneLabel:  'rgba(224,82,82,0.8)',
+    },
   };
 
-  // ── Build the bridge geometry once ──────────────────────────────────────
-  function _buildBridge() {
-    bridgeGroup = new THREE.Group();
-    scene.add(bridgeGroup);
-
-    // -- Deck --
-    const dkMat = new THREE.MeshLambertMaterial({ color: HEX.DECK_SAFE });
-    deckMats.push(dkMat);
-    const deck = new THREE.Mesh(new THREE.BoxGeometry(14, 0.28, 1.8), dkMat);
-    deck.castShadow    = true;
-    deck.receiveShadow = true;
-    bridgeGroup.add(deck);
-
-    // Road surface
-    const roadMat = new THREE.MeshLambertMaterial({ color: HEX.ROAD });
-    const road = new THREE.Mesh(new THREE.PlaneGeometry(14, 1.5), roadMat);
-    road.rotation.x = -Math.PI / 2;
-    road.position.y = 0.145;
-    bridgeGroup.add(road);
-
-    // Road centre line dashes
-    const dashMat = new THREE.MeshLambertMaterial({
-      color: 0xf5edcc, transparent: true, opacity: 0.55
-    });
-    [-4, -2, 0, 2, 4].forEach(dx => {
-      const dash = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.07), dashMat);
-      dash.rotation.x = -Math.PI / 2;
-      dash.position.set(dx, 0.148, 0);
-      bridgeGroup.add(dash);
-    });
-
-    // -- Towers --
-    [-4.6, 4.6].forEach(tx => {
-      const shaftMat = new THREE.MeshLambertMaterial({ color: HEX.TOWER_SAFE });
-      const capMat   = new THREE.MeshLambertMaterial({ color: HEX.TOWER_SAFE });
-      towerMats.push(shaftMat, capMat);
-
-      // Main vertical shaft
-      const shaft = new THREE.Mesh(new THREE.BoxGeometry(0.25, 4.4, 0.25), shaftMat);
-      shaft.position.set(tx, 2.2, 0);
-      shaft.castShadow = true;
-      bridgeGroup.add(shaft);
-
-      // Horizontal crossbar
-      const bar = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.16, 1.3), shaftMat);
-      bar.position.set(tx, 1.6, 0);
-      bridgeGroup.add(bar);
-
-      // Tower cap
-      const cap = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.24, 0.56), capMat);
-      cap.position.set(tx, 4.52, 0);
-      bridgeGroup.add(cap);
-    });
-
-    // -- Abutments (bridge ends) --
-    const abutMat = new THREE.MeshLambertMaterial({ color: HEX.ABUT });
-    [-7.8, 7.8].forEach(ax => {
-      const abut = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.4, 2.0), abutMat);
-      abut.position.set(ax, -0.7, 0);
-      abut.castShadow = true;
-      bridgeGroup.add(abut);
-    });
-
-    // -- Suspension cables (catenary curve as LineSegments) --
-    // Cable equation: y = towerHeight - sag * 4 * t * (1 - t)  where t ∈ [0, 1]
-    const TOWER_H   = 4.4;
-    const CABLE_SAG = 3.6;
-    const NUM_PTS   = 50;
-
-    [-0.92, 0.92].forEach(cz => {
-      const pts = [];
-      for (let i = 0; i <= NUM_PTS; i++) {
-        const t = i / NUM_PTS;
-        const cx = -4.6 + 9.2 * t;
-        const cy = TOWER_H - CABLE_SAG * 4 * t * (1 - t);
-        pts.push(new THREE.Vector3(cx, cy, cz));
-      }
-      const geo = new THREE.BufferGeometry().setFromPoints(pts);
-      const mat = new THREE.LineBasicMaterial({ color: HEX.CABLE_SAFE });
-      cableMats.push(mat);
-      bridgeGroup.add(new THREE.Line(geo, mat));
-    });
-
-    // -- Hangers (thin vertical members from cable to deck) --
-    const hangerMat = new THREE.MeshLambertMaterial({ color: HEX.HANGER });
-    const hangerXPositions = [-3.8, -2.4, -1.2, 0, 1.2, 2.4, 3.8];
-
-    hangerXPositions.forEach(hx => {
-      const t    = (hx + 4.6) / 9.2;
-      const cableY = TOWER_H - CABLE_SAG * 4 * t * (1 - t);
-      const hangerH = Math.max(0.05, cableY - 0.14);
-
-      [-0.92, 0.92].forEach(hz => {
-        const hGeo   = new THREE.BoxGeometry(0.055, hangerH, 0.055);
-        const hanger = new THREE.Mesh(hGeo, hangerMat);
-        hanger.position.set(hx, 0.14 + hangerH / 2, hz);
-        bridgeGroup.add(hanger);
-      });
-    });
+  function _getState(isAlert, isWarn) {
+    if (isAlert) return 'alert';
+    if (isWarn)  return 'warn';
+    return 'safe';
   }
 
-  // ── Public: initialise the scene and start the render loop ──────────────
+  // ── Init: cache all SVG element references ───────────────────────────────
   function init() {
-    const wrap = document.getElementById('twin-canvas-wrap');
-    const W    = wrap.clientWidth  || 700;
-    const H    = wrap.clientHeight || 240;
-
-    // Scene
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(HEX.BG);
-    scene.fog        = new THREE.FogExp2(HEX.BG, 0.036);
-
-    // Camera
-    camera = new THREE.PerspectiveCamera(40, W / H, 0.1, 60);
-    camera.position.set(0, 5, 15);
-    camera.lookAt(0, 1, 0);
-
-    // Renderer
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-    renderer.setSize(W, H);
-    renderer.shadowMap.enabled  = true;
-    renderer.shadowMap.type     = THREE.PCFSoftShadowMap;
-    wrap.insertBefore(renderer.domElement, wrap.firstChild);
-
-    // ── Lighting ──────────────────────────────────────────────────────────
-    scene.add(new THREE.AmbientLight(0xffffff, 0.68));
-
-    const sun = new THREE.DirectionalLight(0xfff6e8, 1.05);
-    sun.position.set(9, 14, 7);
-    sun.castShadow = true;
-    sun.shadow.camera.left   = -12;
-    sun.shadow.camera.right  =  12;
-    sun.shadow.camera.top    =  10;
-    sun.shadow.camera.bottom =  -5;
-    sun.shadow.camera.near   =   1;
-    sun.shadow.camera.far    =  30;
-    scene.add(sun);
-
-    const fill = new THREE.DirectionalLight(0xd8e8ff, 0.32);
-    fill.position.set(-6, 4, -9);
-    scene.add(fill);
-
-    // Red point light for alert glow — starts off
-    alertPointLight = new THREE.PointLight(0xff1a1a, 0, 10);
-    alertPointLight.position.set(0, 2.5, 0);
-    scene.add(alertPointLight);
-
-    // ── Environment ──────────────────────────────────────────────────────
-    // Ground plane
-    const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(30, 12),
-      new THREE.MeshLambertMaterial({ color: HEX.GROUND })
-    );
-    ground.rotation.x  = -Math.PI / 2;
-    ground.position.y  = -1.65;
-    ground.receiveShadow = true;
-    scene.add(ground);
-
-    // Water body under the bridge span
-    const water = new THREE.Mesh(
-      new THREE.PlaneGeometry(10, 7),
-      new THREE.MeshLambertMaterial({ color: HEX.WATER, transparent: true, opacity: 0.4 })
-    );
-    water.rotation.x = -Math.PI / 2;
-    water.position.set(0, -1.62, 0);
-    scene.add(water);
-
-    // ── Bridge geometry ──────────────────────────────────────────────────
-    _buildBridge();
-
-    // ── Event listeners ──────────────────────────────────────────────────
-    window.addEventListener('resize', _onResize);
-
-    initialized = true;
-    _loop();
+    const ids = [
+      'deck-zone-a', 'deck-zone-b', 'deck-zone-c',
+      'zone-a-bg', 'zone-b-bg', 'zone-c-bg',
+      'zone-a-label', 'zone-b-label', 'zone-c-label',
+      'cable-main-top', 'cable-main-bot',
+      'hgr-1','hgr-2','hgr-3','hgr-4','hgr-5','hgr-6','hgr-7',
+      'tower-left', 'tower-right',
+      'cap-light-left', 'cap-light-right',
+      'node-s1', 'node-s2', 'node-s3', 'node-s4',
+      'node-s1-val', 'node-s2-val', 'node-s3-val', 'node-s4-val',
+      'twin-overlay', 'twin-score-badge',
+      'bridge-svg',
+    ];
+    ids.forEach(id => { elems[id] = document.getElementById(id); });
   }
 
-  // ── Internal: resize handler ─────────────────────────────────────────
-  function _onResize() {
-    if (!renderer) return;
-    const wrap = document.getElementById('twin-canvas-wrap');
-    const W    = wrap.clientWidth;
-    const H    = wrap.clientHeight;
-    camera.aspect = W / H;
-    camera.updateProjectionMatrix();
-    renderer.setSize(W, H);
+  // ── Apply color to a zone deck rect ─────────────────────────────────────
+  function _colorDeck(el, col) {
+    if (!el) return;
+    el.setAttribute('fill', col);
   }
 
-  // ── Internal: main render loop ────────────────────────────────────────
-  function _loop() {
-    requestAnimationFrame(_loop);
-    if (!initialized) return;
-
-    // Slow horizontal camera orbit to show 3-D depth
-    cameraAngle += 0.0038;
-    camera.position.x = Math.sin(cameraAngle) * 9;
-    camera.position.z = Math.cos(cameraAngle) * 15;
-    camera.lookAt(0, 1, 0);
-
-    // Vibration shake — scales with sensor value
-    const vibFactor = Math.max(0, (currentVib - 5) / (THRESH_VIB - 5));
-    if (vibFactor > 0) {
-      const t = Date.now();
-      bridgeGroup.position.y = vibFactor * 0.09 * Math.sin(t * 0.024);
-      bridgeGroup.rotation.z = vibFactor * 0.004 * Math.sin(t * 0.019 + 1.2);
-    } else {
-      bridgeGroup.position.y = 0;
-      bridgeGroup.rotation.z = 0;
-    }
-
-    renderer.render(scene, camera);
+  // ── Apply zone background highlight ─────────────────────────────────────
+  function _colorZoneBg(bgEl, labelEl, col) {
+    if (!bgEl || !labelEl) return;
+    bgEl.setAttribute('fill', col.zoneGrad);
+    labelEl.setAttribute('fill', col.zoneLabel);
   }
 
-  // ── Public: update visual state based on sensor data ─────────────────
-  function setAlert(isAlert, vibLevel) {
-    currentVib = vibLevel;
-    if (!initialized) return;
-
-    const dkCol  = isAlert ? HEX.DECK_ALERT  : HEX.DECK_SAFE;
-    const twCol  = isAlert ? HEX.TOWER_ALERT : HEX.TOWER_SAFE;
-    const cbCol  = isAlert ? HEX.CABLE_ALERT : HEX.CABLE_SAFE;
-    const emDk   = isAlert ? 0x2a0000 : 0x000000;
-    const emTw   = isAlert ? 0x120000 : 0x000000;
-    const emInt  = isAlert ? 0.22     : 0;
-
-    deckMats.forEach(m => {
-      m.color.setHex(dkCol);
-      m.emissive.setHex(emDk);
-      m.emissiveIntensity = emInt;
-    });
-
-    towerMats.forEach(m => {
-      m.color.setHex(twCol);
-      m.emissive.setHex(emTw);
-      m.emissiveIntensity = emInt * 0.8;
-    });
-
-    cableMats.forEach(m => m.color.setHex(cbCol));
-
-    // Alert point light intensity
-    alertPointLight.intensity = isAlert ? 1.8 : 0;
-
-    // Overlay badge in the 3D viewport
-    const overlay = document.getElementById('twin-overlay');
-    if (isAlert) {
-      overlay.textContent  = '⚠ ALERT';
-      overlay.className    = 'twin-status-overlay alert';
-    } else {
-      overlay.textContent  = '✓ SAFE';
-      overlay.className    = 'twin-status-overlay';
+  // ── Apply node color ─────────────────────────────────────────────────────
+  function _colorNode(nodeEl, col) {
+    if (!nodeEl) return;
+    const circle = nodeEl.querySelector('circle');
+    if (circle) {
+      circle.setAttribute('fill', col.nodeCircle);
+      circle.setAttribute('stroke', col.nodeGlow);
     }
   }
 
-  return { init, setAlert };
+  // ── Vibration shake animation ────────────────────────────────────────────
+  function _startShake() {
+    if (_vibAnim) return;
+    const svg = elems['bridge-svg'];
+    if (!svg) return;
+
+    function shake() {
+      if (!_isAlert && !_isWarn) {
+        svg.style.transform = '';
+        _vibAnim = null;
+        return;
+      }
+      const factor = Math.min(1, _currentVib / THRESH_VIB);
+      const amp    = _isAlert ? factor * 2.2 : factor * 0.8;
+      const t      = Date.now();
+      const dx     = amp * Math.sin(t * 0.05);
+      const dy     = amp * 0.4 * Math.sin(t * 0.07 + 0.5);
+      svg.style.transform = `translate(${dx.toFixed(2)}px, ${dy.toFixed(2)}px)`;
+      _vibAnim = requestAnimationFrame(shake);
+    }
+    _vibAnim = requestAnimationFrame(shake);
+  }
+
+  function _stopShake() {
+    if (_vibAnim) { cancelAnimationFrame(_vibAnim); _vibAnim = null; }
+    const svg = elems['bridge-svg'];
+    if (svg) svg.style.transform = '';
+  }
+
+  // ── Public: update bridge visual from sensor data ─────────────────────────
+  function update(sensorData) {
+    const { temp, vib, sound, motion, anomalyScore, tempAlert, vibAlert, soundAlert, isAlert, isWarn } = sensorData;
+
+    _currentVib = vib;
+    _isAlert    = isAlert;
+    _isWarn     = isWarn;
+
+    const state = _getState(isAlert, isWarn);
+    const col   = COLORS[state];
+
+    // ── Determine per-zone states ──────────────────────────────────────────
+    // Zone A: primarily temp sensor
+    const zoneAAlert = tempAlert;
+    const zoneAWarn  = !tempAlert && temp > THRESH_TEMP * 0.8;
+    const zoneAState = _getState(zoneAAlert, zoneAWarn);
+    const zoneACol   = COLORS[zoneAState];
+
+    // Zone B: vibration + sound (center span, highest stress)
+    const zoneBAlert = vibAlert || soundAlert;
+    const zoneBWarn  = !zoneBAlert && (vib > THRESH_VIB * 0.6 || sound > THRESH_SOUND * 0.7);
+    const zoneBState = _getState(zoneBAlert, zoneBWarn);
+    const zoneBCol   = COLORS[zoneBState];
+
+    // Zone C: motion (right side)
+    const zoneCWarn  = motion > 5;
+    const zoneCAlert = motion > 8;
+    const zoneCState = _getState(zoneCAlert, zoneCWarn);
+    const zoneCCol   = COLORS[zoneCState];
+
+    // ── Deck segments ──────────────────────────────────────────────────────
+    _colorDeck(elems['deck-zone-a'], zoneACol.deckFill);
+    _colorDeck(elems['deck-zone-b'], zoneBCol.deckFill);
+    _colorDeck(elems['deck-zone-c'], zoneCCol.deckFill);
+
+    // ── Zone backgrounds ───────────────────────────────────────────────────
+    _colorZoneBg(elems['zone-a-bg'], elems['zone-a-label'], zoneACol);
+    _colorZoneBg(elems['zone-b-bg'], elems['zone-b-label'], zoneBCol);
+    _colorZoneBg(elems['zone-c-bg'], elems['zone-c-label'], zoneCCol);
+
+    // ── Cables: color by overall worst state ──────────────────────────────
+    const worstState = zoneBAlert ? 'alert' : (zoneBWarn || zoneAWarn || zoneCWarn) ? 'warn' : 'safe';
+    const wCol = COLORS[worstState];
+    if (elems['cable-main-top']) elems['cable-main-top'].setAttribute('stroke', wCol.cable);
+    if (elems['cable-main-bot']) elems['cable-main-bot'].setAttribute('stroke', wCol.cable);
+    ['hgr-1','hgr-2','hgr-3','hgr-4','hgr-5','hgr-6','hgr-7'].forEach(id => {
+      if (elems[id]) elems[id].setAttribute('stroke', wCol.cable);
+    });
+
+    // ── Towers ─────────────────────────────────────────────────────────────
+    const towerColor = isAlert ? '#8b2020' : isWarn ? '#8a7040' : '#5a6780';
+    if (elems['tower-left'])  elems['tower-left'].setAttribute('fill', towerColor);
+    if (elems['tower-right']) elems['tower-right'].setAttribute('fill', towerColor);
+
+    // ── Cap lights ─────────────────────────────────────────────────────────
+    const capLightColor  = isAlert ? '#e05252' : isWarn ? '#f0a94a' : '#68d391';
+    const capLightFilter = isAlert ? 'url(#glow-red)' : isWarn ? 'url(#glow-warn)' : 'url(#glow-green)';
+    ['cap-light-left', 'cap-light-right'].forEach(id => {
+      if (elems[id]) {
+        elems[id].setAttribute('fill', capLightColor);
+        elems[id].setAttribute('filter', capLightFilter);
+      }
+    });
+
+    // ── Sensor nodes ──────────────────────────────────────────────────────
+    // S1 = temp (Zone A)
+    _colorNode(elems['node-s1'], zoneACol);
+    // S2 = vib (Zone B)
+    _colorNode(elems['node-s2'], zoneBCol);
+    // S3 = sound (Zone B)
+    _colorNode(elems['node-s3'], zoneBCol);
+    // S4 = motion (Zone C)
+    _colorNode(elems['node-s4'], zoneCCol);
+
+    // ── Node value labels ─────────────────────────────────────────────────
+    if (elems['node-s1-val']) elems['node-s1-val'].textContent = `T:${temp.toFixed(1)}°C`;
+    if (elems['node-s2-val']) elems['node-s2-val'].textContent = `V:${vib.toFixed(2)}`;
+    if (elems['node-s3-val']) elems['node-s3-val'].textContent = `Snd:${sound.toFixed(0)}dB`;
+    if (elems['node-s4-val']) elems['node-s4-val'].textContent = `M:${motion.toFixed(2)}g`;
+
+    // ── SVG overlay badge ─────────────────────────────────────────────────
+    const overlay = elems['twin-overlay'];
+    if (overlay) {
+      if (isAlert) {
+        overlay.textContent = '⚠ ALERT';
+        overlay.className   = 'twin-status-overlay alert';
+      } else if (isWarn) {
+        overlay.textContent = '▲ WARNING';
+        overlay.className   = 'twin-status-overlay warn';
+      } else {
+        overlay.textContent = '✓ SAFE';
+        overlay.className   = 'twin-status-overlay';
+      }
+    }
+
+    // ── Score badge ───────────────────────────────────────────────────────
+    if (elems['twin-score-badge']) {
+      elems['twin-score-badge'].textContent = `Score: ${anomalyScore.toFixed(2)}`;
+    }
+
+    // ── Vibration shake ───────────────────────────────────────────────────
+    if (isAlert || isWarn) _startShake();
+    else _stopShake();
+
+    // ── Zone panels (below SVG) ───────────────────────────────────────────
+    _updateZonePanel('a', zoneAState, temp,    null,  null,  null);
+    _updateZonePanel('b', zoneBState, null,    vib,   sound, null);
+    _updateZonePanel('c', zoneCState, null,    null,  null,  motion);
+  }
+
+  // ── Update zone panel UI ──────────────────────────────────────────────────
+  function _updateZonePanel(zone, state, temp, vib, sound, motion) {
+    const dot    = document.getElementById(`zpd-${zone}`);
+    const status = document.getElementById(`zps-${zone}-status`);
+
+    // dot class
+    if (dot) {
+      dot.className = 'zp-dot' + (state === 'alert' ? ' alert' : state === 'warn' ? ' warn' : '');
+    }
+    // status chip
+    if (status) {
+      status.textContent = state.toUpperCase();
+      status.className   = 'zp-status' + (state === 'alert' ? ' alert' : state === 'warn' ? ' warn' : '');
+    }
+
+    // per-zone sensor values
+    if (zone === 'a' && temp !== null) {
+      const el = document.getElementById('zps-temp');
+      if (el) {
+        el.textContent = temp.toFixed(1);
+        el.className   = state === 'alert' ? 'alert-val' : state === 'warn' ? 'warn-val' : '';
+      }
+    }
+    if (zone === 'b') {
+      if (vib !== null) {
+        const el = document.getElementById('zps-vib');
+        if (el) {
+          el.textContent = vib.toFixed(2);
+          el.className   = state === 'alert' ? 'alert-val' : state === 'warn' ? 'warn-val' : '';
+        }
+      }
+      if (sound !== null) {
+        const el = document.getElementById('zps-snd');
+        if (el) {
+          el.textContent = sound.toFixed(0);
+          el.className   = state === 'alert' ? 'alert-val' : state === 'warn' ? 'warn-val' : '';
+        }
+      }
+    }
+    if (zone === 'c' && motion !== null) {
+      const el = document.getElementById('zps-mot');
+      if (el) {
+        el.textContent = motion.toFixed(2);
+        el.className   = state === 'alert' ? 'alert-val' : state === 'warn' ? 'warn-val' : '';
+      }
+    }
+  }
+
+  return { init, update };
 
 })(); // end TWIN module
+
+/* ════════════════════════════════════════════
+   ANOMALY SCORE COMPUTATION
+   score = (temp/50) + (vib/5) + (sound/100)
+   < 1.0  → SAFE
+   1.0–1.5 → WARNING
+   > 1.5  → ALERT
+   ════════════════════════════════════════════ */
+function computeAnomalyScore(temp, vib, sound) {
+  return (temp / 50) + (vib / 5) + (sound / 100);
+}
 
 /* ════════════════════════════════════════════
    ALERTS LOG
@@ -1496,21 +1992,21 @@ function updateCard(cardId, valId, fillId, deltaId, val, prevVal, min, max, isAl
 }
 
 /* ════════════════════════════════════════════
-   STATUS PANEL
+   STATUS PANEL + ANOMALY SCORE DISPLAY
    ════════════════════════════════════════════ */
-function updateStatus(isAlert, tempAlert, vibAlert, soundAlert) {
+function updateStatus(isAlert, isWarn, tempAlert, vibAlert, soundAlert, anomalyScore) {
   const badge  = document.getElementById('status-badge');
   const detail = document.getElementById('status-detail');
   const iBar   = document.getElementById('integrity-bar');
   const iPct   = document.getElementById('integrity-pct');
 
+  // ── Status badge ─────────────────────────────────────────────────────────
   if (isAlert) {
     badge.className = 'status-badge alert';
     badge.innerHTML =
       `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-        <line x1="12" y1="9" x2="12" y2="13"/>
-        <line x1="12" y1="17" x2="12.01" y2="17"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
       </svg><span>ALERT</span>`;
 
     const causes = [
@@ -1524,6 +2020,20 @@ function updateStatus(isAlert, tempAlert, vibAlert, soundAlert) {
     iBar.style.width       = ig + '%';
     iBar.style.background  = 'var(--red-lt)';
     iPct.textContent       = ig + '%';
+
+  } else if (isWarn) {
+    badge.className = 'status-badge warning';
+    badge.innerHTML =
+      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg><span>WARNING</span>`;
+    detail.textContent  = 'Elevated readings — monitor closely';
+    detail.style.color  = 'var(--amber)';
+    iBar.style.width       = '68%';
+    iBar.style.background  = 'var(--amber-lt)';
+    iPct.textContent       = '68%';
+
   } else {
     badge.className = 'status-badge normal';
     badge.innerHTML =
@@ -1537,6 +2047,27 @@ function updateStatus(isAlert, tempAlert, vibAlert, soundAlert) {
     iBar.style.background  = 'var(--green-lt)';
     iPct.textContent       = ig + '%';
   }
+
+  // ── Anomaly score display ─────────────────────────────────────────────────
+  const scoreEl  = document.getElementById('anomaly-score-val');
+  const scoreFill = document.getElementById('anomaly-fill');
+  const scorePct  = Math.min(100, (anomalyScore / 2) * 100); // 2 = max meaningful score
+
+  if (scoreEl) {
+    scoreEl.textContent = anomalyScore.toFixed(2);
+    scoreEl.className   = isAlert ? 'anomaly-score-val alert' : isWarn ? 'anomaly-score-val warn' : 'anomaly-score-val';
+  }
+  if (scoreFill) {
+    scoreFill.style.width      = scorePct + '%';
+    scoreFill.style.background = isAlert ? 'var(--red-lt)' : isWarn ? 'var(--amber-lt)' : 'var(--green-lt)';
+  }
+
+  // ── Top bar anomaly score ─────────────────────────────────────────────────
+  const tbScore = document.getElementById('tb-anomaly-score');
+  if (tbScore) {
+    tbScore.textContent = anomalyScore.toFixed(2);
+    tbScore.className   = `tb-val ${isAlert ? 'bad' : isWarn ? 'hi' : 'good'}`;
+  }
 }
 
 /* ════════════════════════════════════════════
@@ -1545,38 +2076,44 @@ function updateStatus(isAlert, tempAlert, vibAlert, soundAlert) {
 function applyData(data) {
   readingCount++;
 
-  // Safely extract fields — fall back to 0 if backend doesn't provide them yet
+  // ── Extract sensor values ─────────────────────────────────────────────────
   const temp   = Number(data.temperature ?? 0);
   const vib    = Number(data.vibration   ?? 0);
   const motion = Number(data.motion      ?? 0);
   const sound  = Number(data.sound       ?? 0);
 
-  // Alert logic
+  // ── Alert logic ───────────────────────────────────────────────────────────
   const tempAlert  = temp  > THRESH_TEMP;
   const vibAlert   = vib   > THRESH_VIB;
   const soundAlert = sound > THRESH_SOUND;
   const isAlert    = tempAlert || vibAlert || soundAlert;
 
-  // ── Sensor cards ──────────────────────────────────────────────────────
-  updateCard('sc-temp',   'cv-temp',   'cf-temp',   'cd-temp',   temp,   prevTemp,   25,   50,   tempAlert);
-  updateCard('sc-vib',    'cv-vib',    'cf-vib',    'cd-vib',    vib,    prevVib,    0,    50,   vibAlert);
-  updateCard('sc-motion', 'cv-motion', 'cf-motion', 'cd-motion', motion, prevMotion, 0,    10,   false);
-  updateCard('sc-sound',  'cv-sound',  'cf-sound',  'cd-sound',  sound,  prevSound,  0,    100,  soundAlert);
+  // ── Anomaly score (per spec) ──────────────────────────────────────────────
+  // score = (temp/50) + (vib/5) + (sound/100)
+  const anomalyScore = computeAnomalyScore(temp, vib, sound);
+  const isWarn = !isAlert && anomalyScore >= 1.0; // 1.0–1.5 → WARNING
 
-  // ── System status ─────────────────────────────────────────────────────
-  updateStatus(isAlert, tempAlert, vibAlert, soundAlert);
+  // ── Sensor cards ──────────────────────────────────────────────────────────
+  updateCard('sc-temp',   'cv-temp',   'cf-temp',   'cd-temp',   temp,   prevTemp,   25,  50,  tempAlert);
+  updateCard('sc-vib',    'cv-vib',    'cf-vib',    'cd-vib',    vib,    prevVib,    0,   10,  vibAlert);
+  updateCard('sc-motion', 'cv-motion', 'cf-motion', 'cd-motion', motion, prevMotion, 0,   10,  false);
+  updateCard('sc-sound',  'cv-sound',  'cf-sound',  'cd-sound',  sound,  prevSound,  0,   100, soundAlert);
 
-  // ── 3D Twin ───────────────────────────────────────────────────────────
-  TWIN.setAlert(isAlert, vib);
+  // ── System status + anomaly ───────────────────────────────────────────────
+  updateStatus(isAlert, isWarn, tempAlert, vibAlert, soundAlert, anomalyScore);
 
-  // ── Charts ────────────────────────────────────────────────────────────
+  // ── SVG Digital Twin ──────────────────────────────────────────────────────
+  TWIN.update({ temp, vib, sound, motion, anomalyScore, tempAlert, vibAlert, soundAlert, isAlert, isWarn });
+
+  // ── Charts ────────────────────────────────────────────────────────────────
   document.getElementById('chart-temp-cur').textContent = temp.toFixed(1);
-  document.getElementById('chart-vib-cur').textContent  = vib.toFixed(1);
+  document.getElementById('chart-vib-cur').textContent  = vib.toFixed(2);
 
   tempHistory.push(temp);
   vibHistory.push(vib);
   if (tempHistory.length > MAX_HISTORY) { tempHistory.shift(); vibHistory.shift(); }
 
+  // Update chart data + line colors based on alert state
   tempChart.data.datasets[0].data            = [...tempHistory];
   tempChart.data.datasets[0].borderColor     = tempAlert ? '#c0392b' : '#c87c1a';
   tempChart.data.datasets[0].backgroundColor = tempAlert ? 'rgba(192,57,43,.05)' : 'rgba(200,124,26,.05)';
@@ -1587,24 +2124,27 @@ function applyData(data) {
   vibChart.data.datasets[0].backgroundColor  = vibAlert  ? 'rgba(192,57,43,.05)' : 'rgba(37,99,168,.05)';
   vibChart.update('none');
 
-  // ── Alert log ─────────────────────────────────────────────────────────
+  // ── Alert log ─────────────────────────────────────────────────────────────
   if (isAlert && !wasAlert) {
-    if (tempAlert)  addAlert('critical', `High temperature ${temp.toFixed(1)}°C — thermal stress on cables`);
-    if (vibAlert)   addAlert('critical', `High vibration ${vib.toFixed(1)} m/s² — structural resonance detected`);
-    if (soundAlert) addAlert('critical', `High sound level ${sound.toFixed(0)} dB — possible impact event`);
+    if (tempAlert)  addAlert('critical', `High temperature ${temp.toFixed(1)}°C — thermal stress (Zone A)`);
+    if (vibAlert)   addAlert('critical', `High vibration ${vib.toFixed(2)} m/s² — structural resonance (Zone B)`);
+    if (soundAlert) addAlert('critical', `High sound level ${sound.toFixed(0)} dB — possible impact (Zone B)`);
   }
-  if (!isAlert && wasAlert && normalRun > 0) {
+  if (isWarn && !wasAlert && !isAlert) {
+    addAlert('warning', `Anomaly score ${anomalyScore.toFixed(2)} — elevated readings, monitoring`);
+  }
+  if (!isAlert && !isWarn && wasAlert) {
     addAlert('resolved', 'System returned to NORMAL — all sensors within safe thresholds');
   }
 
   normalRun  = isAlert ? 0 : normalRun + 1;
-  wasAlert   = isAlert;
+  wasAlert   = isAlert || isWarn;
   prevTemp   = temp;
   prevVib    = vib;
   prevMotion = motion;
   prevSound  = sound;
 
-  // ── Top bar ───────────────────────────────────────────────────────────
+  // ── Top bar ───────────────────────────────────────────────────────────────
   const soundEl = document.getElementById('tb-sound');
   soundEl.textContent = sound.toFixed(0);
   soundEl.className   = `tb-val ${soundAlert ? 'bad' : sound > 35 ? 'hi' : 'good'}`;
@@ -1655,7 +2195,7 @@ async function fetchData() {
    BOOT
    ════════════════════════════════════════════ */
 window.addEventListener('load', () => {
-  // Initialise Three.js scene after all resources are available
+  // Initialise SVG Digital Twin
   TWIN.init();
 
   // Start polling
