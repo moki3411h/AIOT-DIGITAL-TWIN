@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SHM · Digital Twin Dashboard</title>
+
+<!-- Fonts: Barlow Condensed (display) + IBM Plex Mono (data) + Barlow (body) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ════════════════════════════════════════════
+   DESIGN TOKENS
+   ════════════════════════════════════════════ */
+:root {
+  --ink:       #1a1814;
+  --ink2:      #2c2820;
+  --ink3:      #3d3830;
+  --surface:   #f5f2ec;
+  --card:      #fdfcf9;
+  --warm:      #ece8df;
+  --amber:     #c87c1a;
+  --amber-lt:  #f0a94a;
+  --amber-dim: rgba(200,124,26,.12);
+  --green:     #2a7d4f;
+  --green-lt:  #38a169;
+  --green-dim: rgba(42,125,79,.11);
+  --red:       #c0392b;
+  --red-lt:    #e05252;
+  --red-dim:   rgba(192,57,43,.11);
+  --sky:       #2563a8;
+  --sky-dim:   rgba(37,99,168,.10);
+  --muted:     #8a8177;
+  --muted2:    #b5b0a8;
+  --rule:      rgba(26,24,20,.09);
+  --rule2:     rgba(26,24,20,.16);
+
+  --f-disp: 'Barlow Condensed', sans-serif;
+  --f-body: 'Barlow', sans-serif;
+  --f-mono: 'IBM Plex Mono', monospace;
+
+  --r-card: 6px;
+  --r-sm:   4px;
+
+  --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 8px rgba(0,0,0,.04);
+  --shadow-md: 0 2px 8px rgba(0,0,0,.08), 0 4px 20px rgba(0,0,0,.05);
+}
+
+/* ════════════════════════════════════════════
+   BASE RESET
+   ════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 14px; scroll-behavior: smooth; }
+
+body {
+  font-family: var(--f-body);
+  background: var(--surface);
+  color: var(--ink);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Subtle paper texture */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: .6;
+}
+
+/* ════════════════════════════════════════════
+   HEADER
+   ════════════════════════════════════════════ */
+.header {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--ink);
+  color: var(--surface);
+  padding: 0 28px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 12px rgba(0,0,0,.22);
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.header-icon {
+  width: 32px; height: 32px;
+  background: var(--amber);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.header-icon svg { width: 16px; height: 16px; }
+
+.header-title {
+  font-family: var(--f-disp);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.header-sub {
+  font-family: var(--f-mono);
+  font-size: 9.5px;
+  color: rgba(255,255,255,.4);
+  letter-spacing: .08em;
+  margin-top: 1px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.api-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--f-mono);
+  font-size: 10px;
+  color: rgba(255,255,255,.45);
+}
+
+.api-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #888;
+  transition: background .3s;
+  flex-shrink: 0;
+}
+
+.api-dot.online  { background: var(--green-lt); box-shadow: 0 0 0 2px rgba(56,161,105,.22); animation: pulse-green 2s infinite; }
+.api-dot.offline { background: var(--red-lt);   box-shadow: 0 0 0 2px rgba(224,82,82,.22); }
+
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(56,161,105,.22); }
+  50%       { box-shadow: 0 0 0 5px rgba(56,161,105,.06); }
+}
+
+.header-clock {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: rgba(255,255,255,.55);
+  letter-spacing: .06em;
+}
+
+.header-clock span.h {
+  color: rgba(255,255,255,.9);
+}
+
+/* ════════════════════════════════════════════
+   LAYOUT
+   ════════════════════════════════════════════ */
+.page { position: relative; z-index: 1; }
+
+.top-bar {
+  background: var(--ink2);
+  padding: 9px 28px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+}
+
+.tb-item {
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.tb-item:first-child { padding-left: 0; }
+
+.tb-label {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  color: rgba(255,255,255,.3);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.tb-val {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255,255,255,.75);
+}
+
+.tb-val.hi { color: var(--amber-lt); }
+.tb-val.good { color: #68d391; }
+.tb-val.bad  { color: var(--red-lt); }
+
+.tb-sep {
+  width: 1px; height: 28px;
+  background: rgba(255,255,255,.07);
+  flex-shrink: 0;
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  grid-template-rows: auto auto auto;
+  gap: 16px;
+  padding: 20px 28px 28px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ════════════════════════════════════════════
+   SECTION LABEL
+   ════════════════════════════════════════════ */
+.section-label {
+  font-family: var(--f-disp);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+
+/* ════════════════════════════════════════════
+   SENSOR ROW
+   ════════════════════════════════════════════ */
+.sensor-row {
+  grid-column: 1 / 2;
+}
+
+.sensor-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr) 0.85fr;
+  gap: 12px;
+}
+
+.sensor-card {
+  background: var(--card);
+  border: 1px solid var(--rule2);
+  border-radius: var(--r-card);
+  padding: 16px 18px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+  transition: border-color .3s, box-shadow .3s;
+}
+
+.sensor-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--amber);
+  transition: background .3s;
+}
+
+.sensor-card.alert-card::after { background: var(--red); }
+.sensor-card.alert-card { border-color: rgba(192,57,43,.25); box-shadow: 0 0 0 3px rgba(192,57,43,.07), var(--shadow); }
+
+.card-label {
+  font-family: var(--f-disp);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.card-label svg { width: 11px; height: 11px; opacity: .65; }
+
+.card-value {
+  font-family: var(--f-mono);
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--ink);
+  transition: color .3s;
+  letter-spacing: -.02em;
+}
+
+.card-value.alert-val { color: var(--red); }
+
+.card-unit {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.card-track {
+  height: 3px;
+  background: var(--warm);
+  border-radius: 2px;
+  margin-top: 12px;
+  overflow: hidden;
+}
+
+.card-fill {
+  height: 100%;
+  background: var(--amber);
+  border-radius: 2px;
+  transition: width .5s ease, background .3s;
+}
+
+.sensor-card.alert-card .card-fill { background: var(--red); }
+
+.card-meta {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  color: var(--muted2);
+  margin-top: 5px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.card-meta .delta { color: var(--ink); font-weight: 500; }
+.card-meta .delta.up   { color: var(--red-lt); }
+.card-meta .delta.down { color: var(--green-lt); }
+
+/* ── Status Card ── */
+.status-card {
+  background: var(--card);
+  border: 1px solid var(--rule2);
+  border-radius: var(--r-card);
+  padding: 16px 18px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 11px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: var(--r-sm);
+  font-family: var(--f-disp);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  transition: all .3s;
+}
+
+.status-badge.normal {
+  background: var(--green-dim);
+  color: var(--green);
+  border: 1px solid rgba(42,125,79,.25);
+}
+
+.status-badge.alert {
+  background: var(--red-dim);
+  color: var(--red);
+  border: 1px solid rgba(192,57,43,.3);
+  animation: badge-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes badge-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(192,57,43,.18); }
+  50%       { box-shadow: 0 0 0 6px rgba(192,57,43,0); }
+}
+
+.status-badge svg { width: 14px; height: 14px; }
+
+.status-detail {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  color: var(--muted);
+  line-height: 1.6;
+  transition: color .3s;
+}
+
+.integrity-wrap { width: 100%; }
+
+.integrity-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.integrity-track {
+  height: 4px;
+  background: var(--warm);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.integrity-bar {
+  height: 100%;
+  background: var(--green-lt);
+  border-radius: 2px;
+  transition: width .6s ease, background .3s;
+}
+
+/* ════════════════════════════════════════════
+   TWIN + CHARTS ROW
+   ════════════════════════════════════════════ */
+.twin-col {
+  grid-column: 1 / 2;
+}
+
+.alerts-col {
+  grid-column: 2 / 3;
+  grid-row: 2 / 5;
+}
+
+.charts-col {
+  grid-column: 1 / 2;
+}
+
+/* ── Digital Twin ── */
+.twin-card {
+  background: var(--card);
+  border: 1px solid var(--rule2);
+  border-radius: var(--r-card);
+  padding: 16px 18px;
+  box-shadow: var(--shadow);
+}
+
+.twin-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.twin-id {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.twin-id strong {
+  display: block;
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.twin-legend {
+  display: flex;
+  gap: 10px;
+}
+
+.tl-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  color: var(--muted);
+}
+
+.tl-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+}
+
+/* ── Charts ── */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.chart-card {
+  background: var(--card);
+  border: 1px solid var(--rule2);
+  border-radius: var(--r-card);
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+}
+
+.chart-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.chart-title {
+  font-family: var(--f-disp);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink3);
+}
+
+.chart-current {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.chart-canvas-wrap {
+  position: relative;
+  height: 130px;
+}
+
+/* ════════════════════════════════════════════
+   ALERTS PANEL
+   ════════════════════════════════════════════ */
+.alerts-card {
+  background: var(--card);
+  border: 1px solid var(--rule2);
+  border-radius: var(--r-card);
+  padding: 16px 18px;
+  box-shadow: var(--shadow);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.alerts-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.alerts-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--f-disp);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink3);
+}
+
+.alerts-title svg { width: 12px; height: 12px; color: var(--amber); }
+
+.alert-badge {
+  background: var(--red);
+  color: #fff;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 10px;
+  transition: opacity .3s;
+}
+
+.alert-badge.empty { background: var(--warm); color: var(--muted); }
+
+.clear-btn {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  background: transparent;
+  border: 1px solid var(--rule2);
+  color: var(--muted);
+  padding: 3px 9px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: all .15s;
+  letter-spacing: .05em;
+}
+
+.clear-btn:hover {
+  background: var(--warm);
+  border-color: var(--rule2);
+  color: var(--ink);
+}
+
+.alert-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.alert-list::-webkit-scrollbar { width: 3px; }
+.alert-list::-webkit-scrollbar-thumb { background: var(--rule2); border-radius: 2px; }
+
+.alert-item {
+  padding: 8px 10px;
+  border-radius: var(--r-sm);
+  border-left: 3px solid;
+  font-family: var(--f-mono);
+  font-size: 9.5px;
+  line-height: 1.6;
+  animation: slide-in .22s ease;
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(-5px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.alert-item.critical { background: rgba(192,57,43,.06); border-color: var(--red);     color: #9b3636; }
+.alert-item.warning  { background: rgba(200,124,26,.07);border-color: var(--amber);   color: #8a5a10; }
+.alert-item.resolved { background: rgba(42,125,79,.07); border-color: var(--green);   color: #276841; }
+.alert-item.info     { background: var(--sky-dim);      border-color: var(--sky);     color: #1a4d8a; }
+
+.alert-time {
+  display: block;
+  font-size: 8.5px;
+  opacity: .55;
+  margin-bottom: 1px;
+  letter-spacing: .04em;
+}
+
+.alert-empty {
+  text-align: center;
+  padding: 24px;
+  font-family: var(--f-mono);
+  font-size: 10px;
+  color: var(--muted2);
+}
+
+/* ════════════════════════════════════════════
+   LOADING OVERLAY
+   ════════════════════════════════════════════ */
+.loading-overlay {
+  position: fixed; inset: 0;
+  background: var(--surface);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  transition: opacity .4s, visibility .4s;
+}
+
+.loading-overlay.hidden { opacity: 0; visibility: hidden; }
+
+.loading-spinner {
+  width: 36px; height: 36px;
+  border: 3px solid var(--rule2);
+  border-top-color: var(--amber);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-text {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: .1em;
+}
+
+/* ════════════════════════════════════════════
+   CONNECTION ERROR BANNER
+   ════════════════════════════════════════════ */
+.conn-error {
+  background: rgba(192,57,43,.08);
+  border: 1px solid rgba(192,57,43,.22);
+  border-radius: var(--r-sm);
+  padding: 8px 14px;
+  font-family: var(--f-mono);
+  font-size: 10px;
+  color: var(--red);
+  display: none;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 28px 0;
+}
+
+.conn-error.visible { display: flex; }
+.conn-error svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+/* ════════════════════════════════════════════
+   UTILITY
+   ════════════════════════════════════════════ */
+.val-transition { transition: color .3s; }
+</style>
+</head>
+<body>
+
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loading">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Connecting to backend API…</div>
+</div>
+
+<!-- ══ HEADER ══ -->
+<header class="header">
+  <div class="header-brand">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+    </div>
+    <div>
+      <div class="header-title">Smart Structural Health Monitoring</div>
+      <div class="header-sub">Edge AI · Digital Twin · Real-time Analysis</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="api-indicator">
+      <div class="api-dot" id="api-dot"></div>
+      <span id="api-status-text">Connecting…</span>
+    </div>
+    <div class="header-clock">
+      <span id="clock" class="h">--:--:--</span>
+    </div>
+  </div>
+</header>
+
+<!-- PAGE -->
+<div class="page">
+
+  <!-- Connection error banner -->
+  <div class="conn-error" id="conn-error">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <span>Cannot reach backend. Make sure Flask is running on <strong>http://127.0.0.1:5000</strong></span>
+  </div>
+
+  <!-- TOP META BAR -->
+  <div class="top-bar">
+    <div class="tb-item">
+      <div class="tb-label">Node</div>
+      <div class="tb-val hi" id="tb-node">RPI-EDGE-01</div>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-item">
+      <div class="tb-label">Structure</div>
+      <div class="tb-val" id="tb-struct">BRIDGE-001</div>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-item">
+      <div class="tb-label">Mode</div>
+      <div class="tb-val" id="tb-mode">—</div>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-item">
+      <div class="tb-label">Anomaly Score</div>
+      <div class="tb-val" id="tb-score">—</div>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-item">
+      <div class="tb-label">Last Reading</div>
+      <div class="tb-val" id="tb-ts">—</div>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-item">
+      <div class="tb-label">Poll Rate</div>
+      <div class="tb-val good">2.5 s</div>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-item">
+      <div class="tb-label">Total Readings</div>
+      <div class="tb-val" id="tb-readings">0</div>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-item">
+      <div class="tb-label">Session Alerts</div>
+      <div class="tb-val" id="tb-alert-count">0</div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- ── SENSOR CARDS ── -->
+    <div class="sensor-row">
+      <div class="section-label">Live Sensor Data</div>
+      <div class="sensor-cards">
+
+        <!-- Temperature -->
+        <div class="sensor-card" id="sc-temp">
+          <div class="card-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/>
+            </svg>
+            Temperature
+          </div>
+          <div class="card-value val-transition" id="cv-temp">—</div>
+          <div class="card-unit">°C · threshold 45°C</div>
+          <div class="card-track"><div class="card-fill" id="cf-temp" style="width:0%"></div></div>
+          <div class="card-meta">
+            <span>25°C min</span>
+            <span class="delta" id="cd-temp">—</span>
+            <span>50°C max</span>
+          </div>
+        </div>
+
+        <!-- Vibration -->
+        <div class="sensor-card" id="sc-vib">
+          <div class="card-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+            Vibration
+          </div>
+          <div class="card-value val-transition" id="cv-vib">—</div>
+          <div class="card-unit">m/s² · threshold 4.0</div>
+          <div class="card-track">
+            <div class="card-fill" id="cf-vib" style="width:0%; background: var(--sky)"></div>
+          </div>
+          <div class="card-meta">
+            <span>0.1 min</span>
+            <span class="delta" id="cd-vib">—</span>
+            <span>5.0 max</span>
+          </div>
+        </div>
+
+        <!-- Strain -->
+        <div class="sensor-card" id="sc-strain">
+          <div class="card-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/>
+            </svg>
+            Strain
+          </div>
+          <div class="card-value val-transition" id="cv-strain">—</div>
+          <div class="card-unit">με · max 100 με</div>
+          <div class="card-track">
+            <div class="card-fill" id="cf-strain" style="width:0%; background: var(--green-lt)"></div>
+          </div>
+          <div class="card-meta">
+            <span>10 min</span>
+            <span class="delta" id="cd-strain">—</span>
+            <span>100 max</span>
+          </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="status-card">
+          <div class="card-label" style="margin-bottom:0">System Status</div>
+          <div class="status-badge normal" id="status-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span id="status-text">NORMAL</span>
+          </div>
+          <div class="status-detail" id="status-detail">Awaiting data…</div>
+          <div class="integrity-wrap">
+            <div class="integrity-labels">
+              <span>Structural Integrity</span>
+              <span id="integrity-pct">—</span>
+            </div>
+            <div class="integrity-track">
+              <div class="integrity-bar" id="integrity-bar" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── ALERTS PANEL (right column, spans rows 2-4) ── -->
+    <div class="alerts-col">
+      <div class="section-label">Alert Log</div>
+      <div class="alerts-card">
+        <div class="alerts-hdr">
+          <div class="alerts-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            Events
+            <span class="alert-badge empty" id="alert-badge-count">0</span>
+          </div>
+          <button class="clear-btn" onclick="clearAlerts()">Clear</button>
+        </div>
+        <div class="alert-list" id="alert-list">
+          <div class="alert-empty">Awaiting sensor data…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DIGITAL TWIN ── -->
+    <div class="twin-col">
+      <div class="section-label">Digital Twin Visualization</div>
+      <div class="twin-card">
+        <div class="twin-meta">
+          <div class="twin-id">
+            <strong>BRIDGE-STRUCT-001</strong>
+            Span 120 m · Pre-stressed concrete · 3 sensor zones
+          </div>
+          <div class="twin-legend">
+            <div class="tl-item"><div class="tl-dot" style="background:var(--green-lt)"></div>Safe</div>
+            <div class="tl-item"><div class="tl-dot" style="background:var(--amber)"></div>Monitor</div>
+            <div class="tl-item"><div class="tl-dot" style="background:var(--red-lt)"></div>Alert</div>
+          </div>
+        </div>
+        <svg id="twin-svg" viewBox="0 0 700 195" xmlns="http://www.w3.org/2000/svg"
+             style="width:100%;height:auto;display:block;background:#f8f6f1;border-radius:4px;border:1px solid var(--rule)">
+        </svg>
+      </div>
+    </div>
+
+    <!-- ── CHARTS ── -->
+    <div class="charts-col">
+      <div class="section-label">Sensor History · last 30 readings</div>
+      <div class="charts-grid">
+
+        <div class="chart-card">
+          <div class="chart-hdr">
+            <div class="chart-title">Temperature</div>
+            <div class="chart-current"><span id="chart-temp-cur">—</span> °C</div>
+          </div>
+          <div class="chart-canvas-wrap">
+            <canvas id="chart-temp" role="img" aria-label="Temperature readings over time">Temperature over time</canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-hdr">
+            <div class="chart-title">Vibration</div>
+            <div class="chart-current"><span id="chart-vib-cur">—</span> m/s²</div>
+          </div>
+          <div class="chart-canvas-wrap">
+            <canvas id="chart-vib" role="img" aria-label="Vibration readings over time">Vibration over time</canvas>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+
+<script>
+/* ════════════════════════════════════════════
+   CONFIG
+   ════════════════════════════════════════════ */
+const API_BASE    = 'http://127.0.0.1:5000';
+const POLL_MS     = 2500;
+const MAX_HISTORY = 30;
+
+/* ════════════════════════════════════════════
+   STATE
+   ════════════════════════════════════════════ */
+let tempHistory   = [];
+let vibHistory    = [];
+let prevTemp      = null;
+let prevVib       = null;
+let prevStrain    = null;
+let sessionAlerts = 0;
+let readingCount  = 0;
+let wasAlert      = false;
+let normalRun     = 0;
+
+/* ════════════════════════════════════════════
+   CLOCK
+   ════════════════════════════════════════════ */
+function tickClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleTimeString('en-US', { hour12: false });
+}
+setInterval(tickClock, 1000);
+tickClock();
+
+/* ════════════════════════════════════════════
+   CHARTS
+   ════════════════════════════════════════════ */
+const chartDefaults = {
+  responsive: true,
+  maintainAspectRatio: false,
+  animation: { duration: 300 },
+  elements: {
+    point: { radius: 0, hoverRadius: 4 },
+    line: { tension: 0.42, borderWidth: 2 }
+  },
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      backgroundColor: '#1a1814',
+      borderColor: 'rgba(26,24,20,.14)',
+      borderWidth: 1,
+      titleColor: '#8a8177',
+      bodyColor: '#ece8df',
+      titleFont:  { family: "'IBM Plex Mono', monospace", size: 9 },
+      bodyFont:   { family: "'IBM Plex Mono', monospace", size: 11 },
+      displayColors: false,
+      padding: 9,
+    }
+  },
+  scales: {
+    x: { display: false },
+    y: {
+      grid: { color: 'rgba(26,24,20,.05)', drawBorder: false },
+      border: { display: false },
+      ticks: {
+        color: '#b5b0a8',
+        font: { family: "'IBM Plex Mono', monospace", size: 9 },
+        maxTicksLimit: 4,
+      }
+    }
+  }
+};
+
+const tempChart = new Chart(
+  document.getElementById('chart-temp').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: Array(MAX_HISTORY).fill(''),
+      datasets: [
+        {
+          data: Array(MAX_HISTORY).fill(null),
+          borderColor: '#c87c1a',
+          backgroundColor: 'rgba(200,124,26,.05)',
+          fill: true,
+        },
+        {
+          // Threshold line
+          data: Array(MAX_HISTORY).fill(45),
+          borderColor: 'rgba(192,57,43,.35)',
+          borderDash: [5, 4],
+          borderWidth: 1.5,
+          pointRadius: 0,
+          fill: false,
+        }
+      ]
+    },
+    options: { ...chartDefaults, scales: { ...chartDefaults.scales, y: { ...chartDefaults.scales.y, min: 20, max: 55 } } }
+  }
+);
+
+const vibChart = new Chart(
+  document.getElementById('chart-vib').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: Array(MAX_HISTORY).fill(''),
+      datasets: [
+        {
+          data: Array(MAX_HISTORY).fill(null),
+          borderColor: '#2563a8',
+          backgroundColor: 'rgba(37,99,168,.05)',
+          fill: true,
+        },
+        {
+          data: Array(MAX_HISTORY).fill(4.0),
+          borderColor: 'rgba(192,57,43,.35)',
+          borderDash: [5, 4],
+          borderWidth: 1.5,
+          pointRadius: 0,
+          fill: false,
+        }
+      ]
+    },
+    options: { ...chartDefaults, scales: { ...chartDefaults.scales, y: { ...chartDefaults.scales.y, min: 0, max: 6 } } }
+  }
+);
+
+/* ════════════════════════════════════════════
+   DIGITAL TWIN SVG
+   ════════════════════════════════════════════ */
+function renderBridge(sysAlert, tempAlert, vibAlert, strainAlert, temp, vib, strain) {
+  const G = '#2a7d4f'; // safe green
+  const R = '#c0392b'; // alert red
+  const A = '#c87c1a'; // amber
+  const S = '#2563a8'; // sky blue
+  const BG = '#f8f6f1';
+  const GROUND = '#e8e4dc';
+
+  const z1 = tempAlert   ? R : G;
+  const z2 = vibAlert    ? R : G;
+  const z3 = strainAlert ? A : G;
+
+  const CABLE_COL  = sysAlert ? R : '#5a7f9a';
+  const TOWER_COL  = sysAlert ? R : '#4a5568';
+  const DECK_BASE  = '#6b7280';
+
+  // Catenary curve for cable
+  const cableY = x => {
+    const norm = (x - 350) / 195;
+    return 60 + 58 * norm * norm;
+  };
+
+  // Hangers
+  const hangerXs = [225, 252, 280, 308, 336, 364, 392, 420, 448, 476];
+  const hangerLines = hangerXs.map(x => {
+    const cy = cableY(x);
+    const dy = 116;
+    if (cy >= dy - 1) return '';
+    const col = x < 272 ? z1 : x <= 432 ? z2 : z3;
+    return `<line x1="${x}" y1="${cy.toFixed(1)}" x2="${x}" y2="${dy}" stroke="${col}" stroke-width="1.2" opacity="0.5"/>`;
+  }).join('');
+
+  // Sensor node
+  const sensorNode = (cx, cy, color, label) => `
+    <circle cx="${cx}" cy="${cy}" r="5.5" fill="${color}" opacity="0.9" stroke="white" stroke-width="1.2"/>
+    <text x="${cx}" y="${cy - 13}" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7.5" fill="${color}">${label}</text>
+  `;
+
+  // Animated pulsing ring (only when alerting)
+  const pulseRing = sysAlert ? `
+    <circle cx="155" cy="110" r="11" fill="none" stroke="${R}" stroke-width="1" opacity="0.3">
+      <animate attributeName="r" values="8;16;8" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;0;0.4" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="350" cy="110" r="11" fill="none" stroke="${R}" stroke-width="1" opacity="0.3">
+      <animate attributeName="r" values="8;16;8" dur="2s" begin="0.4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;0;0.4" dur="2s" begin="0.4s" repeatCount="indefinite"/>
+    </circle>
+  ` : '';
+
+  document.getElementById('twin-svg').innerHTML = `
+    <!-- Sky & ground -->
+    <rect width="700" height="195" fill="${BG}"/>
+    <rect x="0" y="155" width="700" height="40" fill="${GROUND}"/>
+    <line x1="0" y1="155" x2="700" y2="155" stroke="rgba(0,0,0,0.08)" stroke-width="1"/>
+
+    <!-- Water lines -->
+    <line x1="40"  y1="166" x2="120" y2="166" stroke="rgba(37,99,168,0.18)" stroke-width="1.5"/>
+    <line x1="60"  y1="172" x2="105" y2="172" stroke="rgba(37,99,168,0.10)" stroke-width="1"/>
+    <line x1="580" y1="163" x2="660" y2="163" stroke="rgba(37,99,168,0.15)" stroke-width="1.5"/>
+    <line x1="595" y1="170" x2="645" y2="170" stroke="rgba(37,99,168,0.08)" stroke-width="1"/>
+
+    <!-- Piers -->
+    <rect x="146" y="118" width="18" height="38" rx="2" fill="${TOWER_COL}" opacity="0.75"/>
+    <rect x="536" y="118" width="18" height="38" rx="2" fill="${TOWER_COL}" opacity="0.75"/>
+    <rect x="140" y="153" width="30" height="5" rx="1" fill="${TOWER_COL}" opacity="0.45"/>
+    <rect x="530" y="153" width="30" height="5" rx="1" fill="${TOWER_COL}" opacity="0.45"/>
+
+    <!-- Towers -->
+    <rect x="149" y="18" width="14" height="102" rx="3" fill="${TOWER_COL}"/>
+    <rect x="539" y="18" width="14" height="102" rx="3" fill="${TOWER_COL}"/>
+    <rect x="143" y="12" width="26" height="11" rx="3" fill="${TOWER_COL}"/>
+    <rect x="533" y="12" width="26" height="11" rx="3" fill="${TOWER_COL}"/>
+    <!-- Tower cross beam -->
+    <rect x="151" y="52" width="10" height="4" rx="1" fill="rgba(255,255,255,0.15)"/>
+    <rect x="541" y="52" width="10" height="4" rx="1" fill="rgba(255,255,255,0.15)"/>
+
+    <!-- Main cables -->
+    <path d="M 156 18 Q 350 90 544 18" fill="none" stroke="${CABLE_COL}" stroke-width="2.8" opacity="0.85"/>
+    <path d="M 160 18 Q 350 98 540 18" fill="none" stroke="${CABLE_COL}" stroke-width="1.2" opacity="0.25"/>
+
+    <!-- Hanger lines -->
+    ${hangerLines}
+
+    <!-- Deck zones (3 colour zones) -->
+    <rect x="55"  y="112" width="193" height="8" rx="0" fill="${z1}" opacity="0.75"/>
+    <rect x="248" y="112" width="204" height="8" rx="0" fill="${z2}" opacity="0.75"/>
+    <rect x="452" y="112" width="193" height="8" rx="0" fill="${z3}" opacity="0.75"/>
+    <!-- Zone dividers -->
+    <line x1="248" y1="112" x2="248" y2="120" stroke="${BG}" stroke-width="2"/>
+    <line x1="452" y1="112" x2="452" y2="120" stroke="${BG}" stroke-width="2"/>
+    <!-- Deck sheen -->
+    <line x1="55" y1="113" x2="645" y2="113" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+    <line x1="55" y1="119" x2="645" y2="119" stroke="rgba(0,0,0,0.12)" stroke-width="1"/>
+    <!-- Guardrails -->
+    <line x1="55" y1="111" x2="645" y2="111" stroke="rgba(0,0,0,0.22)" stroke-width="1.8"/>
+    <line x1="55" y1="122" x2="645" y2="122" stroke="rgba(0,0,0,0.22)" stroke-width="1.8"/>
+    <!-- Road dashes -->
+    ${[95,130,168,210,255,300,350,400,445,490,535,572,608].map(x =>
+      `<rect x="${x}" y="115" width="16" height="2" rx="1" fill="rgba(255,255,255,0.2)"/>`
+    ).join('')}
+
+    <!-- Abutments -->
+    <rect x="28" y="112" width="28" height="44" rx="2" fill="${TOWER_COL}" opacity="0.55"/>
+    <rect x="644" y="112" width="28" height="44" rx="2" fill="${TOWER_COL}" opacity="0.55"/>
+
+    <!-- Sensor nodes -->
+    ${pulseRing}
+    ${sensorNode(155, 110, tempAlert   ? R : A, `T:${temp}°C`)}
+    ${sensorNode(350, 110, vibAlert    ? R : S, `V:${vib}`)}
+    ${sensorNode(545, 110, strainAlert ? R : G, `S:${strain}με`)}
+
+    <!-- Zone labels -->
+    <text x="152" y="136" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7" fill="${z1}" opacity="0.75">ZONE·A</text>
+    <text x="350" y="136" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7" fill="${z2}" opacity="0.75">ZONE·B</text>
+    <text x="548" y="136" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7" fill="${z3}" opacity="0.75">ZONE·C</text>
+
+    <!-- Status stamp -->
+    <rect x="9" y="9" width="${sysAlert?78:60}" height="20" rx="3"
+      fill="${sysAlert ? 'rgba(192,57,43,.12)' : 'rgba(42,125,79,.1)'}"/>
+    <text x="18" y="23" font-family="IBM Plex Mono,monospace" font-size="8.5" font-weight="600"
+      fill="${sysAlert ? R : G}" letter-spacing="0.05em">${sysAlert ? '⚠ DAMAGE' : '✓ SAFE'}</text>
+
+    <!-- Scale -->
+    <line x1="55" y1="178" x2="645" y2="178" stroke="rgba(0,0,0,0.1)" stroke-width="1"/>
+    <line x1="55"  y1="175" x2="55"  y2="181" stroke="rgba(0,0,0,0.14)" stroke-width="1"/>
+    <line x1="645" y1="175" x2="645" y2="181" stroke="rgba(0,0,0,0.14)" stroke-width="1"/>
+    <text x="350" y="190" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7.5" fill="#b5b0a8">← 120 m span →</text>
+  `;
+}
+
+/* ════════════════════════════════════════════
+   ALERTS
+   ════════════════════════════════════════════ */
+function addAlert(type, message) {
+  const list = document.getElementById('alert-list');
+  const empty = list.querySelector('.alert-empty');
+  if (empty) empty.remove();
+
+  if (type === 'critical' || type === 'warning') {
+    sessionAlerts++;
+    document.getElementById('tb-alert-count').textContent = sessionAlerts;
+  }
+
+  const cnt = document.getElementById('alert-badge-count');
+  cnt.textContent = sessionAlerts;
+  cnt.className = sessionAlerts > 0 ? 'alert-badge' : 'alert-badge empty';
+
+  const icons = { critical: '⚠', warning: '▲', resolved: '✓', info: '·' };
+  const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+
+  const el = document.createElement('div');
+  el.className = `alert-item ${type}`;
+  el.innerHTML = `<span class="alert-time">${time}</span>${icons[type] || '·'} ${message}`;
+  list.insertBefore(el, list.firstChild);
+
+  // Cap list length
+  while (list.children.length > 25) list.removeChild(list.lastChild);
+}
+
+function clearAlerts() {
+  sessionAlerts = 0;
+  document.getElementById('tb-alert-count').textContent = '0';
+  document.getElementById('alert-badge-count').textContent = '0';
+  document.getElementById('alert-badge-count').className = 'alert-badge empty';
+  document.getElementById('alert-list').innerHTML = '<div class="alert-empty">Log cleared</div>';
+}
+
+/* ════════════════════════════════════════════
+   SENSOR CARD UPDATER
+   ════════════════════════════════════════════ */
+function updateCard(cardId, valId, fillId, deltaId, val, prevVal, min, max, isAlert) {
+  const card = document.getElementById(cardId);
+  document.getElementById(valId).textContent = val.toFixed(1);
+  document.getElementById(valId).className = `card-value val-transition${isAlert ? ' alert-val' : ''}`;
+
+  const pct = Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100));
+  document.getElementById(fillId).style.width = pct + '%';
+  isAlert
+    ? card.classList.add('alert-card')
+    : card.classList.remove('alert-card');
+
+  if (prevVal !== null) {
+    const d = val - prevVal;
+    const el = document.getElementById(deltaId);
+    const sign = d >= 0 ? '+' : '';
+    el.textContent = `${d >= 0 ? '↑' : '↓'} ${sign}${d.toFixed(1)}`;
+    el.className = `delta ${d > 0.05 ? 'up' : d < -0.05 ? 'down' : ''}`;
+  }
+}
+
+/* ════════════════════════════════════════════
+   STATUS PANEL
+   ════════════════════════════════════════════ */
+function updateStatus(data) {
+  const isAlert = data.status === 'ALERT';
+  const badge  = document.getElementById('status-badge');
+  const detail = document.getElementById('status-detail');
+  const iBar   = document.getElementById('integrity-bar');
+  const iPct   = document.getElementById('integrity-pct');
+
+  if (isAlert) {
+    badge.className = 'status-badge alert';
+    badge.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span>ALERT</span>`;
+    const causes = data.triggers.map(t => t.sensor).join(', ');
+    detail.textContent = `Anomaly detected — ${causes}`;
+    detail.style.color = 'var(--red)';
+    const ig = Math.max(22, 92 - (data.triggers.length * 24));
+    iBar.style.width = ig + '%';
+    iBar.style.background = 'var(--red-lt)';
+    iPct.textContent = ig + '%';
+  } else {
+    badge.className = 'status-badge normal';
+    badge.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg><span>NORMAL</span>`;
+    detail.textContent = 'All sensors within safe thresholds';
+    detail.style.color = 'var(--muted)';
+    const ig = 88 + Math.floor(Math.random() * 8);
+    iBar.style.width = ig + '%';
+    iBar.style.background = 'var(--green-lt)';
+    iPct.textContent = ig + '%';
+  }
+}
+
+/* ════════════════════════════════════════════
+   MAIN DATA HANDLER
+   ════════════════════════════════════════════ */
+function applyData(data) {
+  readingCount++;
+  const { temperature: temp, vibration: vib, strain, status } = data;
+  const isAlert   = status === 'ALERT';
+  const tempAlert = temp > 45;
+  const vibAlert  = vib  > 4.0;
+  const strAlert  = strain > 85;
+
+  // Sensor cards
+  updateCard('sc-temp',   'cv-temp',   'cf-temp',   'cd-temp',   temp,   prevTemp,   25,  50,  tempAlert);
+  updateCard('sc-vib',    'cv-vib',    'cf-vib',    'cd-vib',    vib,    prevVib,    0.1, 5.0, vibAlert);
+  updateCard('sc-strain', 'cv-strain', 'cf-strain', 'cd-strain', strain, prevStrain, 10,  100, strAlert);
+
+  // Status
+  updateStatus(data);
+
+  // Twin
+  renderBridge(isAlert, tempAlert, vibAlert, strAlert, temp.toFixed(1), vib.toFixed(2), strain.toFixed(0));
+
+  // Charts
+  document.getElementById('chart-temp-cur').textContent = temp.toFixed(1);
+  document.getElementById('chart-vib-cur').textContent  = vib.toFixed(2);
+
+  tempHistory.push(temp);
+  vibHistory.push(vib);
+  if (tempHistory.length > MAX_HISTORY) { tempHistory.shift(); vibHistory.shift(); }
+
+  tempChart.data.datasets[0].data       = [...tempHistory];
+  tempChart.data.datasets[0].borderColor = tempAlert ? '#c0392b' : '#c87c1a';
+  tempChart.data.datasets[0].backgroundColor = tempAlert ? 'rgba(192,57,43,.05)' : 'rgba(200,124,26,.05)';
+  tempChart.update('none');
+
+  vibChart.data.datasets[0].data        = [...vibHistory];
+  vibChart.data.datasets[0].borderColor  = vibAlert  ? '#c0392b' : '#2563a8';
+  vibChart.data.datasets[0].backgroundColor = vibAlert  ? 'rgba(192,57,43,.05)' : 'rgba(37,99,168,.05)';
+  vibChart.update('none');
+
+  // Alerts
+  if (isAlert && !wasAlert) {
+    data.triggers.forEach(t => addAlert('critical', t.message));
+  }
+  if (!isAlert && wasAlert && normalRun > 0) {
+    addAlert('resolved', 'System returned to NORMAL — all sensors within safe thresholds');
+  }
+
+  normalRun = isAlert ? 0 : normalRun + 1;
+  wasAlert  = isAlert;
+  prevTemp  = temp;
+  prevVib   = vib;
+  prevStrain = strain;
+
+  // Top bar
+  const scoreEl = document.getElementById('tb-score');
+  scoreEl.textContent = data.score;
+  scoreEl.className = `tb-val ${data.score > 0.5 ? 'bad' : data.score > 0.25 ? 'hi' : 'good'}`;
+
+  const ts = new Date(data.timestamp);
+  document.getElementById('tb-ts').textContent = ts.toLocaleTimeString('en-US', { hour12: false });
+  document.getElementById('tb-mode').textContent   = data.source === 'hardware' ? 'HW' : 'SIM';
+  document.getElementById('tb-readings').textContent = readingCount;
+}
+
+/* ════════════════════════════════════════════
+   API POLLING
+   ════════════════════════════════════════════ */
+let consecutiveErrors = 0;
+
+async function fetchData() {
+  try {
+    const res = await fetch(`${API_BASE}/api/data`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    // Mark online
+    consecutiveErrors = 0;
+    document.getElementById('api-dot').className = 'api-dot online';
+    document.getElementById('api-status-text').textContent = 'API Connected';
+    document.getElementById('conn-error').classList.remove('visible');
+
+    applyData(data);
+
+    if (readingCount === 1) {
+      addAlert('info', `Connected to ${API_BASE}/api/data · mode: ${data.source}`);
+    }
+
+  } catch (err) {
+    consecutiveErrors++;
+    document.getElementById('api-dot').className = 'api-dot offline';
+    document.getElementById('api-status-text').textContent = 'API Offline';
+    if (consecutiveErrors === 2) {
+      document.getElementById('conn-error').classList.add('visible');
+      addAlert('warning', `Backend unreachable — retrying (${API_BASE}/api/data)`);
+    }
+  } finally {
+    // Always hide loading overlay after first attempt
+    document.getElementById('loading').classList.add('hidden');
+  }
+}
+
+/* ════════════════════════════════════════════
+   BOOT
+   ════════════════════════════════════════════ */
+renderBridge(false, false, false, false, '—', '—', '—');
+
+// First fetch immediately, then poll
+fetchData();
+setInterval(fetchData, POLL_MS);
+</script>
+</body>
+</html>
