@@ -437,7 +437,7 @@ body::before {
       <div class="twin-card">
         <div class="twin-meta">
           <div class="twin-id">
-            <strong>BRIDGE-STRUCT-001 · Suspension Bridge</strong>
+            <strong>BRIDGE-STRUCT-001 · Through-Truss Bridge</strong>
             Span 120 m · Pre-stressed Concrete · 3 Sensor Zones · 4 Nodes
           </div>
           <div class="twin-legend">
@@ -538,11 +538,11 @@ const TWIN3D = (() => {
 
   /* ── Scene objects ── */
   let scene, camera, renderer, clock;
-  let bridgeGroup;      // root group, gets shaken on alert
-  let deckSegments = {};// { a, b, c } — THREE.Mesh references for deck
-  let towerMeshes = []; // left + right tower meshes
-  let cableMeshes = []; // all cable tube meshes
-  let sensorNodes = {}; // { s1, s2, s3, s4 } — { mesh, glow, labelSprite }
+  let bridgeGroup;
+  let deckSegments = {};
+  let towerMeshes = [];
+  let cableMeshes = [];
+  let sensorNodes = {};
   let groundMesh, waterMesh;
   let directionalLight, ambientLight, rimLight;
 
@@ -565,7 +565,7 @@ const TWIN3D = (() => {
   let targetSpherical = { theta: 0.5, phi: 1.1, radius: 18 };
   let autoRotate = true;
   let autoRotateTimer = 0;
-  const AUTO_ROTATE_DELAY = 4000; // ms of idle before auto-rotate resumes
+  const AUTO_ROTATE_DELAY = 4000;
   let lastInteraction = 0;
 
   /* ── Alert animation state ── */
@@ -615,8 +615,8 @@ const TWIN3D = (() => {
     for (let i = 0; i <= segments; i++) {
       const t  = i / segments;
       const x  = x1 + (x2 - x1) * t;
-      const yt = y1 + (y2 - y1) * t;           // linear blend
-      const sag = sagY * 4 * t * (1 - t);       // parabola
+      const yt = y1 + (y2 - y1) * t;
+      const sag = sagY * 4 * t * (1 - t);
       pts.push(new THREE.Vector3(x, yt - sag, z));
     }
     for (let i = 0; i < pts.length - 1; i++) {
@@ -629,26 +629,19 @@ const TWIN3D = (() => {
   /* Create a glowing sensor sphere */
   function makeSensorNode(color = 0x22c55e) {
     const g = new THREE.Group();
-
-    // Core sphere
     const coreGeo = new THREE.SphereGeometry(0.18, 16, 16);
     const coreMat = new THREE.MeshPhongMaterial({ color, emissive: color, emissiveIntensity: 0.6, shininess: 80 });
     const core    = new THREE.Mesh(coreGeo, coreMat);
     g.add(core);
-
-    // Outer glow shell
     const glowGeo = new THREE.SphereGeometry(0.32, 16, 16);
     const glowMat = new THREE.MeshPhongMaterial({ color, transparent: true, opacity: 0.18, side: THREE.FrontSide, depthWrite: false });
     const glow    = new THREE.Mesh(glowGeo, glowMat);
     g.add(glow);
-
-    // Pulse ring (flat torus)
     const ringGeo = new THREE.TorusGeometry(0.42, 0.025, 8, 32);
     const ringMat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.4 });
     const ring    = new THREE.Mesh(ringGeo, ringMat);
     ring.rotation.x = Math.PI / 2;
     g.add(ring);
-
     g.userData = { core, glow, ring, coreMat, glowMat, ringMat };
     return g;
   }
@@ -703,7 +696,6 @@ const TWIN3D = (() => {
 
     clock = new THREE.Clock();
 
-    /* ── Renderer ── */
     renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
     renderer.setSize(W, H);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -713,15 +705,12 @@ const TWIN3D = (() => {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.1;
 
-    /* ── Camera ── */
     camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 200);
     _updateCameraFromSpherical();
 
-    /* ── Scene ── */
     scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x08101c, 0.022);
 
-    /* ── Lights ── */
     ambientLight = new THREE.AmbientLight(0x1a2030, 1.2);
     scene.add(ambientLight);
 
@@ -742,27 +731,20 @@ const TWIN3D = (() => {
     rimLight.position.set(-6, 4, -10);
     scene.add(rimLight);
 
-    /* hemisphere sky light */
     scene.add(new THREE.HemisphereLight(0x1a2840, 0x0a1018, 0.5));
 
-    /* ── Build bridge ── */
     _buildScene();
-
-    /* ── Mouse orbit controls (manual, no OrbitControls lib needed) ── */
     _bindControls(container);
-
-    /* ── Resize handler ── */
     window.addEventListener('resize', _onResize);
-
-    /* ── Start render loop ── */
     _animate();
   }
 
-  /* ─────────────────────────────────────
-     BUILD SCENE GEOMETRY
-     ───────────────────────────────────── */
+  /* ═══════════════════════════════════════════════════════════════════
+     _buildScene — THROUGH-TRUSS BRIDGE (updated to match reference)
+     ═══════════════════════════════════════════════════════════════════ */
   function _buildScene() {
-    /* Ground plane */
+
+    /* ── Ground plane ── */
     const gGeo = new THREE.PlaneGeometry(60, 30);
     const gMat = new THREE.MeshLambertMaterial({ color: 0x0d1a0e });
     groundMesh = new THREE.Mesh(gGeo, gMat);
@@ -771,7 +753,7 @@ const TWIN3D = (() => {
     groundMesh.receiveShadow = true;
     scene.add(groundMesh);
 
-    /* Water (centre of span) */
+    /* ── Water ── */
     const wGeo = new THREE.PlaneGeometry(20, 20);
     const wMat = new THREE.MeshPhongMaterial({
       color: 0x0a2040, emissive: 0x041020, emissiveIntensity: 0.3,
@@ -782,145 +764,186 @@ const TWIN3D = (() => {
     waterMesh.position.set(0, -0.79, 0);
     scene.add(waterMesh);
 
-    /* Subtle grid lines on ground */
+    /* ── Ground grid ── */
     const gridHelper = new THREE.GridHelper(40, 20, 0x1a2a1a, 0x111a11);
     gridHelper.position.y = -0.81;
     scene.add(gridHelper);
 
-    /* ── Main bridge group (shaken together) ── */
+    /* ── Bridge group ── */
     bridgeGroup = new THREE.Group();
     scene.add(bridgeGroup);
 
-    /* ── Abutment piers (left/right ends) ── */
-    _makePier(-9, 0, 0, bridgeGroup);
-    _makePier( 9, 0, 0, bridgeGroup);
+    /* ────────────────────────────────────────────────
+       BRIDGE GEOMETRY — Through-Truss (reference match)
 
-    /* ── DECK SEGMENTS (3 zones, independently coloured) ── */
+       Layout (top view X-axis):
+         -9  ──  abutment  ──  -5.5  ──────── 5.5  ──  abutment  ──  9
+               raker diagonal         5 bay central span
+                                      posts at every 2.2 units
+
+       Side elevation:
+         y=0   bottom chord (full span)
+         y=2.7 top chord (between raker junctions ±5.5)
+         angled rakers connect (±9, 0) → (±5.5, 2.7)
+    ─────────────────────────────────────────────── */
+
+    const HALF    = 9.0;   // half-span → full span 18 units
+    const RAKER_X = 5.5;   // x where top chord meets rakers
+    const H       = 2.7;   // truss height
+    const TZ      = 0.90;  // truss half-depth (trusses at z = ±TZ)
+    const CT      = 0.22;  // member cross-section size (chord / post thickness)
+    const N_BAYS  = 5;
+    const BAY_W   = (RAKER_X * 2) / N_BAYS;  // 2.2 per bay
+
+    /* ── Materials ── */
+    const newConcrete = () => new THREE.MeshPhongMaterial({
+      color: 0xc8d4dc, shininess: 20, specular: 0x606870,
+    });
     const deckMat = (col) => new THREE.MeshPhongMaterial({
-      color: col, emissive: col, emissiveIntensity: 0.12,
-      shininess: 60,
+      color: col, emissive: col, emissiveIntensity: 0.12, shininess: 55,
     });
 
-    // Zone A (left)
-    const dGeoA = new THREE.BoxGeometry(5.8, 0.24, 1.6);
-    deckSegments.a = new THREE.Mesh(dGeoA, deckMat(0x22c55e));
-    deckSegments.a.position.set(-5.9, 0, 0);
+    /* ── Inline helper: box member ── */
+    function bx(w, h, d, x, y, z, mat, toTowers) {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+      m.position.set(x, y, z);
+      m.castShadow = true;
+      m.receiveShadow = true;
+      bridgeGroup.add(m);
+      if (toTowers) towerMeshes.push(m);
+      return m;
+    }
+
+    /* ══ 1. ABUTMENTS — wide concrete pads at each end ══ */
+    // Left abutment: two stacked blocks (lower pad + upper seat)
+    bx(1.9, 0.9, TZ * 2 + CT * 2, -HALF, -0.38, 0, newConcrete(), true);   // lower pad
+    bx(1.4, 0.5, TZ * 2,          -HALF,  0.12, 0, newConcrete(), true);    // upper seat
+    // Right abutment
+    bx(1.9, 0.9, TZ * 2 + CT * 2,  HALF, -0.38, 0, newConcrete(), true);
+    bx(1.4, 0.5, TZ * 2,           HALF,  0.12, 0, newConcrete(), true);
+
+    /* ══ 2. DECK SEGMENTS — three zones for status color feedback ══ */
+    // Zone A — left span (x: -9 to -3)
+    deckSegments.a = new THREE.Mesh(new THREE.BoxGeometry(6, 0.28, TZ * 2), deckMat(0x22c55e));
+    deckSegments.a.position.set(-6, 0, 0);
     deckSegments.a.castShadow = true; deckSegments.a.receiveShadow = true;
     bridgeGroup.add(deckSegments.a);
 
-    // Zone B (center)
-    const dGeoB = new THREE.BoxGeometry(6.2, 0.28, 1.6);
-    deckSegments.b = new THREE.Mesh(dGeoB, deckMat(0x22c55e));
+    // Zone B — centre span (x: -3 to 3)
+    deckSegments.b = new THREE.Mesh(new THREE.BoxGeometry(6, 0.30, TZ * 2), deckMat(0x22c55e));
     deckSegments.b.position.set(0, 0, 0);
     deckSegments.b.castShadow = true; deckSegments.b.receiveShadow = true;
     bridgeGroup.add(deckSegments.b);
 
-    // Zone C (right)
-    const dGeoC = new THREE.BoxGeometry(5.8, 0.24, 1.6);
-    deckSegments.c = new THREE.Mesh(dGeoC, deckMat(0x22c55e));
-    deckSegments.c.position.set(5.9, 0, 0);
+    // Zone C — right span (x: 3 to 9)
+    deckSegments.c = new THREE.Mesh(new THREE.BoxGeometry(6, 0.28, TZ * 2), deckMat(0x22c55e));
+    deckSegments.c.position.set(6, 0, 0);
     deckSegments.c.castShadow = true; deckSegments.c.receiveShadow = true;
     bridgeGroup.add(deckSegments.c);
 
-    /* Thin road surface strip */
-    const roadGeo = new THREE.BoxGeometry(18, 0.04, 1.2);
-    const roadMat = new THREE.MeshLambertMaterial({ color: 0x202828 });
-    const road = new THREE.Mesh(roadGeo, roadMat);
-    road.position.y = 0.15;
-    bridgeGroup.add(road);
+    /* Road surface strip */
+    bx(HALF * 2, 0.05, TZ * 2 - 0.30, 0, 0.165, 0,
+       new THREE.MeshLambertMaterial({ color: 0x1e2622 }));
 
-    /* Lane markings (thin flat boxes) */
-    for (let x = -8; x <= 8; x += 2.4) {
-      const lGeo = new THREE.BoxGeometry(1.0, 0.01, 0.06);
-      const lMat = new THREE.MeshBasicMaterial({ color: 0x505828, transparent: true, opacity: 0.6 });
-      const lMesh = new THREE.Mesh(lGeo, lMat);
-      lMesh.position.set(x, 0.17, 0);
-      bridgeGroup.add(lMesh);
+    /* Lane markings */
+    for (let lx = -8; lx <= 8; lx += 2.4) {
+      bx(1.0, 0.01, 0.06, lx, 0.19, 0,
+         new THREE.MeshBasicMaterial({ color: 0x4a5230, transparent: true, opacity: 0.55 }));
     }
 
-    /* Deck railings (left and right edge) */
-    [-0.9, 0.9].forEach(z => {
-      const rGeo = new THREE.BoxGeometry(18, 0.06, 0.06);
-      const rMat = new THREE.MeshLambertMaterial({ color: 0x4a5568 });
-      const rMesh = new THREE.Mesh(rGeo, rMat);
-      rMesh.position.set(0, 0.3, z);
-      bridgeGroup.add(rMesh);
+    /* ══ 3. TRUSS WALLS — built identically on front (z=+TZ) and back (z=-TZ) ══ */
+    [TZ, -TZ].forEach(z => {
+
+      // ── 3a. Bottom chord — full span ──
+      bx(HALF * 2, CT, CT, 0, 0, z, newConcrete(), true);
+
+      // ── 3b. Top chord — inner span only (between raker junctions) ──
+      bx(RAKER_X * 2, CT, CT, 0, H, z, newConcrete(), true);
+
+      // ── 3c. End rakers — diagonal members from abutment foot to top-chord end ──
+      // Left raker: (−HALF, 0, z) → (−RAKER_X, H, z)
+      const rakerL = makeCable(
+        new THREE.Vector3(-HALF, CT * 0.5, z),
+        new THREE.Vector3(-RAKER_X, H, z),
+        CT * 0.52, 0xb8c8d4
+      );
+      rakerL.userData.isRaker = true;
+      bridgeGroup.add(rakerL);
+      towerMeshes.push(rakerL);
+
+      // Right raker: (HALF, 0, z) → (RAKER_X, H, z)
+      const rakerR = makeCable(
+        new THREE.Vector3(HALF, CT * 0.5, z),
+        new THREE.Vector3(RAKER_X, H, z),
+        CT * 0.52, 0xb8c8d4
+      );
+      rakerR.userData.isRaker = true;
+      bridgeGroup.add(rakerR);
+      towerMeshes.push(rakerR);
+
+      // ── 3d. Vertical posts — 6 posts creating 5 rectangular bays ──
+      for (let i = 0; i <= N_BAYS; i++) {
+        const px = -RAKER_X + i * BAY_W;
+        bx(CT, H + CT, CT, px, H / 2, z, newConcrete(), true);
+      }
     });
 
-    /* ── TOWERS ── */
-    _buildTower(-3, bridgeGroup);
-    _buildTower( 3, bridgeGroup);
+    /* ══ 4. CROSS-BRACING — floor beams and top portal beams ══ */
+    // Floor beams at deck level (at each post position)
+    for (let i = 0; i <= N_BAYS; i++) {
+      const px = -RAKER_X + i * BAY_W;
+      bx(CT, CT, TZ * 2 + CT, px, 0, 0, newConcrete());
+    }
+    // Abutment-end floor beams
+    bx(CT, CT, TZ * 2 + CT, -HALF, 0, 0, newConcrete());
+    bx(CT, CT, TZ * 2 + CT,  HALF, 0, 0, newConcrete());
 
-    /* ── SUSPENSION CABLES ── */
-    // Main catenary cables (front and back)
-    [-0.7, 0.7].forEach(z => {
-      const cat = makeCatenary(-3, 5, z, 3, 5, 3.2, 14, 0.055, 0x7a9db8);
-      bridgeGroup.add(cat);
-      cableMeshes.push(cat);
+    // Top portal beams (at each post position, at truss top)
+    for (let i = 0; i <= N_BAYS; i++) {
+      const px = -RAKER_X + i * BAY_W;
+      bx(CT, CT, TZ * 2 + CT, px, H, 0, newConcrete());
+    }
 
-      // Side stays from tower tops to abutment
-      bridgeGroup.add(makeCable(
-        new THREE.Vector3(-3, 5, z), new THREE.Vector3(-9, 0.12, z),
-        0.05, 0x6a8ea8
-      ));
-      bridgeGroup.add(makeCable(
-        new THREE.Vector3( 3, 5, z), new THREE.Vector3( 9, 0.12, z),
-        0.05, 0x6a8ea8
-      ));
+    /* ══ 5. EDGE RAILINGS (thin top-edge guards) ══ */
+    [-TZ + CT * 0.4, TZ - CT * 0.4].forEach(rz => {
+      bx(HALF * 2, 0.08, 0.07, 0, 0.34, rz,
+         new THREE.MeshLambertMaterial({ color: 0x4a5568 }));
     });
 
-    // Vertical hangers (suspenders)
-    const hangerPositions = [-2.5, -1.8, -1.1, -0.4, 0.4, 1.1, 1.8, 2.5];
-    hangerPositions.forEach(hx => {
-      const t = (hx - (-3)) / 6; // 0..1
-      const cableY = 5 - 3.2 * 4 * t * (1 - t); // catenary y
-      [-0.7, 0.7].forEach(hz => {
-        const hGeo = new THREE.CylinderGeometry(0.025, 0.025, cableY - 0.14, 4);
-        const hMat = new THREE.MeshLambertMaterial({ color: 0x5a7a90 });
-        const hMesh = new THREE.Mesh(hGeo, hMat);
-        hMesh.position.set(hx, (cableY + 0.14) / 2, hz);
-        bridgeGroup.add(hMesh);
-      });
-    });
-
-    /* ── SENSOR NODES ── */
-    // S1 — Zone A (temp)
+    /* ══ 6. SENSOR NODES — same positions as original ══ */
     sensorNodes.s1 = makeSensorNode(0x22c55e);
-    sensorNodes.s1.position.set(-6.8, 0.5, 0);
+    sensorNodes.s1.position.set(-6.8, 0.52, 0);
     bridgeGroup.add(sensorNodes.s1);
     const l1 = makeLabel('S1 · T:—°C', '#68d391');
-    l1.sprite.position.set(-6.8, 1.2, 0);
+    l1.sprite.position.set(-6.8, 1.32, 0);
     bridgeGroup.add(l1.sprite);
     sensorNodes.s1.userData.label = l1;
 
-    // S2 — Zone B left (vibration)
     sensorNodes.s2 = makeSensorNode(0x22c55e);
-    sensorNodes.s2.position.set(-1.5, 0.5, 0);
+    sensorNodes.s2.position.set(-1.5, 0.52, 0);
     bridgeGroup.add(sensorNodes.s2);
     const l2 = makeLabel('S2 · V:—', '#68d391');
-    l2.sprite.position.set(-1.5, 1.2, 0);
+    l2.sprite.position.set(-1.5, 1.32, 0);
     bridgeGroup.add(l2.sprite);
     sensorNodes.s2.userData.label = l2;
 
-    // S3 — Zone B right (sound)
     sensorNodes.s3 = makeSensorNode(0x22c55e);
-    sensorNodes.s3.position.set(1.5, 0.5, 0);
+    sensorNodes.s3.position.set(1.5, 0.52, 0);
     bridgeGroup.add(sensorNodes.s3);
     const l3 = makeLabel('S3 · Snd:—dB', '#68d391');
-    l3.sprite.position.set(1.5, 1.2, 0);
+    l3.sprite.position.set(1.5, 1.32, 0);
     bridgeGroup.add(l3.sprite);
     sensorNodes.s3.userData.label = l3;
 
-    // S4 — Zone C (motion)
     sensorNodes.s4 = makeSensorNode(0x22c55e);
-    sensorNodes.s4.position.set(6.8, 0.5, 0);
+    sensorNodes.s4.position.set(6.8, 0.52, 0);
     bridgeGroup.add(sensorNodes.s4);
     const l4 = makeLabel('S4 · M:—g', '#68d391');
-    l4.sprite.position.set(6.8, 1.2, 0);
+    l4.sprite.position.set(6.8, 1.32, 0);
     bridgeGroup.add(l4.sprite);
     sensorNodes.s4.userData.label = l4;
 
-    /* Stars in background */
+    /* ══ 7. BACKGROUND STARS ══ */
     const starGeo = new THREE.BufferGeometry();
     const starCount = 300;
     const starVerts = new Float32Array(starCount * 3);
@@ -928,58 +951,6 @@ const TWIN3D = (() => {
     starGeo.setAttribute('position', new THREE.BufferAttribute(starVerts, 3));
     const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1, transparent: true, opacity: 0.5 });
     scene.add(new THREE.Points(starGeo, starMat));
-  }
-
-  /* Build a rectangular pier */
-  function _makePier(x, y, z, parent) {
-    const pGeo = new THREE.BoxGeometry(1.0, 1.6, 1.8);
-    const pMat = new THREE.MeshPhongMaterial({ color: 0x2d3748, shininess: 20 });
-    const pier = new THREE.Mesh(pGeo, pMat);
-    pier.position.set(x, y - 0.8, z);
-    pier.castShadow = pier.receiveShadow = true;
-    parent.add(pier);
-  }
-
-  /* Build a suspension tower with crossbeam + cap light */
-  function _buildTower(x, parent) {
-    // Main vertical shaft
-    const shaftGeo = new THREE.BoxGeometry(0.22, 6, 0.22);
-    const shaftMat = new THREE.MeshPhongMaterial({ color: 0x4a5568, shininess: 40 });
-    const shaft    = new THREE.Mesh(shaftGeo, shaftMat);
-    shaft.position.set(x, 3, 0);
-    shaft.castShadow = true;
-    parent.add(shaft);
-    towerMeshes.push(shaft);
-
-    // Side column supports
-    [-0.6, 0.6].forEach(dz => {
-      const lgGeo = new THREE.BoxGeometry(0.12, 4.5, 0.12);
-      const lgMesh = new THREE.Mesh(lgGeo, shaftMat.clone());
-      lgMesh.position.set(x, 2.25, dz);
-      parent.add(lgMesh);
-      towerMeshes.push(lgMesh);
-    });
-
-    // Cross beam
-    const cbGeo = new THREE.BoxGeometry(0.12, 0.22, 1.4);
-    const cbMesh = new THREE.Mesh(cbGeo, new THREE.MeshPhongMaterial({ color: 0x3a4558 }));
-    cbMesh.position.set(x, 3.5, 0);
-    parent.add(cbMesh);
-
-    // Cap beacon light
-    const capGeo  = new THREE.SphereGeometry(0.14, 12, 12);
-    const capMat  = new THREE.MeshPhongMaterial({ color: 0x68d391, emissive: 0x68d391, emissiveIntensity: 1.5 });
-    const capLight = new THREE.Mesh(capGeo, capMat);
-    capLight.position.set(x, 6.12, 0);
-    parent.add(capLight);
-    towerMeshes.push(capLight); // last two are cap lights
-
-    // Point light at cap (soft glow)
-    const ptLight = new THREE.PointLight(0x38a169, 0.6, 3);
-    ptLight.position.set(x, 6.1, 0);
-    parent.add(ptLight);
-    capLight.userData.pointLight = ptLight;
-    capLight.userData.isCap = true;
   }
 
   /* ─────────────────────────────────────
@@ -1028,7 +999,6 @@ const TWIN3D = (() => {
       autoRotate = false;
     }, { passive: false });
 
-    // Touch support
     let lastTouchDist = 0;
     container.addEventListener('touchstart', e => {
       if (e.touches.length === 1) {
@@ -1115,7 +1085,6 @@ const TWIN3D = (() => {
     isAlertState = isAlert;
     isWarnState  = isWarn;
 
-    /* ── Zone states ── */
     const zA_alert = tempAlert;
     const zA_warn  = !tempAlert && temp > THRESH_TEMP * 0.8;
     const zB_alert = vibAlert || soundAlert;
@@ -1129,45 +1098,34 @@ const TWIN3D = (() => {
       return 0x22c55e;
     }
 
-    /* ── Deck target colors ── */
     targetColors.deckA.set(stateColor(zA_alert, zA_warn));
     targetColors.deckB.set(stateColor(zB_alert, zB_warn));
     targetColors.deckC.set(stateColor(zC_alert, zC_warn));
 
-    /* ── Tower color ── */
-    const towerHex = isAlert ? 0x8b2020 : isWarn ? 0x8a7040 : 0x4a5568;
-    towerMeshes.forEach((m, i) => {
-      if (m.material && !m.userData.isCap) {
-        m.material.color.setHex(towerHex);
-      }
-    });
-
-    /* Cap lights */
-    const capHex   = isAlert ? 0xef4444 : isWarn ? 0xf59e0b : 0x22c55e;
-    const capEmHex = isAlert ? 0xef4444 : isWarn ? 0xf59e0b : 0x68d391;
+    /* Structural members (towerMeshes) color update */
+    const structHex = isAlert ? 0x8a3020 : isWarn ? 0x7a6030 : 0xc8d4dc;
     towerMeshes.forEach(m => {
-      if (m.userData.isCap && m.material) {
-        m.material.color.setHex(capHex);
-        m.material.emissive.setHex(capEmHex);
-        if (m.userData.pointLight) m.userData.pointLight.color.setHex(capEmHex);
+      if (!m) return;
+      // Handle both Mesh and Group (rakers)
+      if (m.isMesh && m.material) {
+        m.material.color.setHex(structHex);
+      } else if (m.isGroup || m.traverse) {
+        m.traverse(child => {
+          if (child.isMesh && child.material) child.material.color.setHex(structHex);
+        });
       }
     });
 
-    /* ── Cable color (overall worst) ── */
-    const cableHex = isAlert ? 0xc06060 : isWarn ? 0xc8a06a : 0x8ab4cc;
-    _setCableColor(cableHex);
-
-    /* ── Sensor nodes ── */
+    /* Sensor node colors */
     const nodeHexA = stateColor(zA_alert, zA_warn);
     const nodeHexB = stateColor(zB_alert, zB_warn);
     const nodeHexC = stateColor(zC_alert, zC_warn);
-
     _setNodeColor(sensorNodes.s1, '#' + nodeHexA.toString(16).padStart(6,'0'));
     _setNodeColor(sensorNodes.s2, '#' + nodeHexB.toString(16).padStart(6,'0'));
     _setNodeColor(sensorNodes.s3, '#' + nodeHexB.toString(16).padStart(6,'0'));
     _setNodeColor(sensorNodes.s4, '#' + nodeHexC.toString(16).padStart(6,'0'));
 
-    /* ── Label updates ── */
+    /* Label updates */
     const lColorA = zA_alert ? '#ef4444' : zA_warn ? '#f59e0b' : '#68d391';
     const lColorB = zB_alert ? '#ef4444' : zB_warn ? '#f59e0b' : '#68d391';
     const lColorC = zC_alert ? '#ef4444' : zC_warn ? '#f59e0b' : '#68d391';
@@ -1176,12 +1134,10 @@ const TWIN3D = (() => {
     updateLabel(sensorNodes.s3.userData.label, `S3 · ${sound.toFixed(0)}dB`, lColorB);
     updateLabel(sensorNodes.s4.userData.label, `S4 · M:${motion.toFixed(2)}g`, lColorC);
 
-    /* ── Shake intensity ── */
     targetShakeIntensity = isAlert ? Math.min(1, vib / THRESH_VIB) * 0.06
                          : isWarn  ? 0.015
                          : 0;
 
-    /* ── HUD overlays ── */
     const hudEl = document.getElementById('twin-hud-status');
     if (hudEl) {
       if (isAlert) { hudEl.textContent = '⚠ ALERT'; hudEl.className = 'twin-hud-tl alert'; }
@@ -1191,7 +1147,6 @@ const TWIN3D = (() => {
     const scoreEl = document.getElementById('twin-hud-score');
     if (scoreEl) scoreEl.textContent = `Score: ${anomalyScore.toFixed(2)}`;
 
-    /* ── Zone panels ── */
     _updateZonePanel('a', zA_alert ? 'alert' : zA_warn ? 'warn' : 'safe', temp, null, null, null);
     _updateZonePanel('b', zB_alert ? 'alert' : zB_warn ? 'warn' : 'safe', null, vib, sound, null);
     _updateZonePanel('c', zC_alert ? 'alert' : zC_warn ? 'warn' : 'safe', null, null, null, motion);
@@ -1220,7 +1175,6 @@ const TWIN3D = (() => {
     const dt = clock.getDelta();
     const t  = clock.elapsedTime;
 
-    /* ── Auto-rotate resume after idle ── */
     if (!isDragging && (Date.now() - lastInteraction) > AUTO_ROTATE_DELAY) {
       autoRotate = true;
     }
@@ -1228,14 +1182,12 @@ const TWIN3D = (() => {
       targetSpherical.theta += dt * 0.12;
     }
 
-    /* ── Smooth camera interpolation ── */
     const CAM_LERP = 1 - Math.pow(0.001, dt);
     spherical.theta  += (targetSpherical.theta  - spherical.theta)  * CAM_LERP;
     spherical.phi    += (targetSpherical.phi    - spherical.phi)    * CAM_LERP;
     spherical.radius += (targetSpherical.radius - spherical.radius) * CAM_LERP;
     _updateCameraFromSpherical();
 
-    /* ── Smooth deck color lerp ── */
     const COLOR_LERP = 1 - Math.pow(0.001, dt);
     ['deckA', 'deckB', 'deckC'].forEach(key => {
       currentColors[key] = lerpColor(currentColors[key], targetColors[key], COLOR_LERP);
@@ -1244,7 +1196,6 @@ const TWIN3D = (() => {
     if (deckSegments.b) { deckSegments.b.material.color.copy(currentColors.deckB); deckSegments.b.material.emissive.copy(currentColors.deckB); }
     if (deckSegments.c) { deckSegments.c.material.color.copy(currentColors.deckC); deckSegments.c.material.emissive.copy(currentColors.deckC); }
 
-    /* ── Emissive intensity breath ── */
     const breathBase = 0.10 + 0.05 * Math.sin(t * 1.2);
     ['a', 'b', 'c'].forEach(k => {
       if (deckSegments[k]) {
@@ -1255,7 +1206,6 @@ const TWIN3D = (() => {
       }
     });
 
-    /* ── Shake interpolation ── */
     shakeIntensity += (targetShakeIntensity - shakeIntensity) * (1 - Math.pow(0.0001, dt));
     if (bridgeGroup && shakeIntensity > 0.001) {
       bridgeGroup.position.x = shakeIntensity * Math.sin(t * 52);
@@ -1264,7 +1214,6 @@ const TWIN3D = (() => {
       bridgeGroup.position.set(0, 0, 0);
     }
 
-    /* ── Pulse sensor nodes ── */
     pulsePhase += dt;
     Object.values(sensorNodes).forEach((nodeGroup, i) => {
       const ud = nodeGroup.userData;
@@ -1280,12 +1229,10 @@ const TWIN3D = (() => {
       }
     });
 
-    /* ── Water gentle animation ── */
     if (waterMesh) {
       waterMesh.position.y = -0.79 + 0.008 * Math.sin(t * 0.7);
     }
 
-    /* ── Directional light subtle motion ── */
     if (directionalLight) {
       directionalLight.position.x = 8 + 2 * Math.sin(t * 0.15);
       directionalLight.position.z = 6 + 2 * Math.cos(t * 0.18);
@@ -1469,10 +1416,8 @@ function applyData(data) {
 
   updateStatus(isAlert, isWarn, tempAlert, vibAlert, soundAlert, anomalyScore);
 
-  // Update 3D twin
   TWIN3D.update({ temp, vib, sound, motion, anomalyScore, tempAlert, vibAlert, soundAlert, isAlert, isWarn });
 
-  // Charts
   document.getElementById('chart-temp-cur').textContent = temp.toFixed(1);
   document.getElementById('chart-vib-cur').textContent  = vib.toFixed(2);
   tempHistory.push(temp); vibHistory.push(vib);
@@ -1486,7 +1431,6 @@ function applyData(data) {
   vibChart.data.datasets[0].backgroundColor = vibAlert ? 'rgba(192,57,43,.05)' : 'rgba(37,99,168,.05)';
   vibChart.update('none');
 
-  // Alerts
   if (isAlert && !wasAlert) {
     if (tempAlert)  addAlert('critical', `High temperature ${temp.toFixed(1)}°C — thermal stress (Zone A)`);
     if (vibAlert)   addAlert('critical', `High vibration ${vib.toFixed(2)} m/s² — structural resonance (Zone B)`);
